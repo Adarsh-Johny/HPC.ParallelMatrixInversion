@@ -5,6 +5,7 @@
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
 void augment_mat(int n, double mat[n][n], double aug_mat[n][2 * n]);
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]);
+void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][ncol]);
 
 int main(int argc, char* argv[]) {
 	
@@ -31,8 +32,29 @@ int main(int argc, char* argv[]) {
 	printf("Augmented matrix after row swap\n");
 	print_mat(2, 2 * 2, aug_mat);
 
+	multiply_row(1, 5, 2, 2 * 2, aug_mat);
+
+	printf("Augmented matrix after row multiplication\n");
+	print_mat(2, 2 * 2, aug_mat);
+
 	return 0;
 }
+
+
+void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]) {
+	
+	/* TODO: remove later, random debugging */
+	if (row_idx < 0 || row_idx >= nrow) {
+		printf("Multiply row: invalid row index %d for matrix %d x %d", row_idx, nrow, ncol);
+		return;
+	}
+
+	int j;
+	for (j = 0; j < ncol; j++) {
+		mat[row_idx][j] *= s;
+	}
+}
+
 
 /* Possibly parallelizable or to combine with sth else */
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]) {
