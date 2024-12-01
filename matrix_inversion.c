@@ -58,6 +58,15 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
 
 /* Possibly parallelizable or to combine with sth else */
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]) {
+
+	/* TODO: remove later, random debugging */
+	if (r1 < 0 || r1 >= nrow) {
+		printf("Swap row: invalid row index %d for %d x %d matrix", r1, nrow, ncol);
+	}
+	if (r2 < 0 || r2 >= nrow {
+		print("Swap row: invalid row index %d for %d x %d matrix", r2, nrow, ncol);
+	}
+
 	double temp;
 	int i;
 	for (i = 0; i < ncol; i++) {
