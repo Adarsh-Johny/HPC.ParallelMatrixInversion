@@ -9,6 +9,7 @@ void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][nc
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
 int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 int rref(int nrow, int ncol, double mat[nrow][ncol]);
+void extract_inverse(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][nrow]);
 
 int main(int argc, char* argv[]) {
 	int n = 3; /* Size of the matrix */
@@ -70,10 +71,26 @@ int main(int argc, char* argv[]) {
 	printf("Matrix after RREF\n");
 	print_mat(n, 2 * n, aug_mat);
 
+	double mat_inv[n][n];
+	extract_inverse(n, 2 * n, aug_mat, mat_inv);
+
+	printf("The extracted inverse matrix\n");
+	print_mat(n, n, mat_inv);
+
 	return 0;
 }
 
+/* Extract the augmented part of the augmented matrix */
+void extract_inverse(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][nrow]) {
+	int i, j;
 
+	for (i = 0; i < nrow; i++) {
+		for (j = 0; j < ncol; j++) {
+			/* Copy only the right side of the augmented matrix */
+			mat_inv[i][j] = mat[i][nrow + j];
+		}
+	}
+}
 
 /* Second part of the Gauss-Jordan elimination, results in the reduced row echelon form */
 int rref(int nrow, int ncol, double mat[nrow][ncol]) {
