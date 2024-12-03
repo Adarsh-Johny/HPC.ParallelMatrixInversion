@@ -3,13 +3,13 @@
 #include <stdlib.h>
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
-void augment_mat(int n, double mat[n][n], double aug_mat[n][2 * n]);
+void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]);
 void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][ncol]);
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
 int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 int rref(int nrow, int ncol, double mat[nrow][ncol]);
-void extract_inverse(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][nrow]);
+void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
 
 int main(int argc, char* argv[]) {
 	int n = 3; /* Size of the matrix */
@@ -25,32 +25,32 @@ int main(int argc, char* argv[]) {
 	
 
 	/* If not, augment matrix and print the result */
-	double aug_mat[n][2 * n];
+	double mat_aug[n][2 * n];
 
-	augment_mat(n, mat, aug_mat);
+	augment_mat(n, mat, mat_aug);
 	
 	printf("Augmented matrix:\n");
-	print_mat(n, 2 * n, aug_mat);
+	print_mat(n, 2 * n, mat_aug);
 
 	/*
-	* swap_rows(0, 1, n, 2 * n, aug_mat);
+	* swap_rows(0, 1, n, 2 * n, mat_aug);
 	* 
 	* printf("Augmented matrix after row swap\n");
-	* print_mat(n, 2 * n, aug_mat);
+	* print_mat(n, 2 * n, mat_aug);
 	* */
 
-	/* multiply_row(1, 5, n, 2 * n, aug_mat); */
+	/* multiply_row(1, 5, n, 2 * n, mat_aug); */
 
 	/* printf("Augmented matrix after row multiplication\n"); */
-	/* print_mat(n, 2 * n, aug_mat); */
+	/* print_mat(n, 2 * n, mat_aug); */
 	/*
-	* subtract_row(1, 2, 1, n, 2 * n, aug_mat);
+	* subtract_row(1, 2, 1, n, 2 * n, mat_aug);
 	*
 	* printf("Augmented matrix after row subtraction\n");
-	* print_mat(n, 2 * n, aug_mat);
+	* print_mat(n, 2 * n, mat_aug);
 	* */
 
-	int res = gaussian_elimination(n, 2 * n, aug_mat);
+	int res = gaussian_elimination(n, 2 * n, mat_aug);
 	if (res == 1) {
 		printf("GE successsful\n");
 	} else {
@@ -58,10 +58,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
-	print_mat(n, 2 * n, aug_mat);
+	print_mat(n, 2 * n, mat_aug);
 
 	
-	int res2 = rref(n, 2 * n, aug_mat);
+	int res2 = rref(n, 2 * n, mat_aug);
 	if (res2 == 1) {
 		printf("RREF successful\n");
 	} else {
@@ -69,10 +69,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Matrix after RREF\n");
-	print_mat(n, 2 * n, aug_mat);
+	print_mat(n, 2 * n, mat_aug);
 
 	double mat_inv[n][n];
-	extract_inverse(n, 2 * n, aug_mat, mat_inv);
+	extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
 	printf("The extracted inverse matrix\n");
 	print_mat(n, n, mat_inv);
@@ -81,13 +81,13 @@ int main(int argc, char* argv[]) {
 }
 
 /* Extract the augmented part of the augmented matrix */
-void extract_inverse(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][nrow]) {
+void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]) {
 	int i, j;
 
 	for (i = 0; i < nrow; i++) {
 		for (j = 0; j < ncol; j++) {
 			/* Copy only the right side of the augmented matrix */
-			mat_inv[i][j] = mat[i][nrow + j];
+			mat_inv[i][j] = mat_aug[i][nrow + j];
 		}
 	}
 }
@@ -223,16 +223,16 @@ void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]) {
 }
 
 /* This surely can be parallelized */
-void augment_mat(int n, double mat[n][n], double aug_mat[n][2 * n]) {
+void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]) {
 	int row, col;
 
 	/* Parallelize the copying of the rows */
 	for (row = 0; row < n; row++) {
 		for (col = 0; col < n; col++) {
 			/* Copy the row of original matrix */
-			aug_mat[row][col] = mat[row][col];
+			mat_aug[row][col] = mat[row][col];
 			/* Create a row of identity matrix to the right */
-			aug_mat[row][n + col] = (row == col) ? 1 : 0;
+			mat_aug[row][n + col] = (row == col) ? 1 : 0;
 		}
 	}
 }
