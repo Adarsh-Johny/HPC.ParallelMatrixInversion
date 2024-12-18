@@ -40,43 +40,12 @@ int main(int argc, char* argv[]) {
 	if (!fp) {
 		perror("fopen");
 		return 1;
-	}
-      
-	/*	
-*	int success = invert_matrix(nrow, ncol, mat);
-*	printf("Inversion success: %d", success);
-	*/	
-
-	/* If not, augment matrix and print the result */
-	/* 
-*	 double mat_aug[n][2 * n];
-*	 augment_mat(n, mat, mat_aug);
-*	
-*	 printf("Augmented matrix:\n");
-*	 print_mat(n, 2 * n, mat_aug);
-	*/
-
-	/*
-	* swap_rows(0, 1, n, 2 * n, mat_aug);
-	* 
-	* printf("Augmented matrix after row swap\n");
-	* print_mat(n, 2 * n, mat_aug);
-	* */
-
-	/* multiply_row(1, 5, n, 2 * n, mat_aug); */
-
-	/* printf("Augmented matrix after row multiplication\n"); */
-	/* print_mat(n, 2 * n, mat_aug); */
-	/*
-	* subtract_row(1, 2, 1, n, 2 * n, mat_aug);
-	*
-	* printf("Augmented matrix after row subtraction\n");
-	* print_mat(n, 2 * n, mat_aug);
-	* */
+	}	
 
 	return 0;
 }
 
+      
 int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	int n = nrow;
 
