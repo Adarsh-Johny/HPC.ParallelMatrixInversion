@@ -1,6 +1,8 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h> /* getcwd */
+#include <stdbool.h>
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
@@ -12,6 +14,8 @@ int rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
 int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
 
+/* TODO: Change return values to true/false */
+
 int main(int argc, char* argv[]) {
 	/* int n = 3; */ /* Size of the matrix */
 	
@@ -22,16 +26,34 @@ int main(int argc, char* argv[]) {
 
 	print_mat(nrow, ncol, mat);
 
-	int success = invert_matrix(nrow, ncol, mat);
-	printf("Inversion success: %d", success);
+	/* Check the working directory */
+	char cwd[1024];
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+		printf("Current working directory: %s\n", cwd);
+	} else {
+		perror("getcwd");
+	}
+	
+	FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
+	/* FILE *fp = fopen("test_matrices.txt", "r"); */
+	/* Check that the file exists */
+	if (!fp) {
+		perror("fopen");
+		return 1;
+	}
+      
+	/*	
+*	int success = invert_matrix(nrow, ncol, mat);
+*	printf("Inversion success: %d", success);
+	*/	
 
 	/* If not, augment matrix and print the result */
 	/* 
-	* double mat_aug[n][2 * n];
-	* augment_mat(n, mat, mat_aug);
-	*
-	* printf("Augmented matrix:\n");
-	* print_mat(n, 2 * n, mat_aug);
+*	 double mat_aug[n][2 * n];
+*	 augment_mat(n, mat, mat_aug);
+*	
+*	 printf("Augmented matrix:\n");
+*	 print_mat(n, 2 * n, mat_aug);
 	*/
 
 	/*
@@ -112,14 +134,14 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 /* Second part of the Gauss-Jordan elimination, results in the reduced row echelon form */
 int rref(int nrow, int ncol, double mat[nrow][ncol]) {
 	int i; 
-	printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol);
+	/* printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol); */
 	print_mat(nrow, ncol, mat);
 
 	for (i = nrow - 1; i > 0; i--) {
-		printf("GE: Eliminating the rows above %d\n", i);
+		/* printf("GE: Eliminating the rows above %d\n", i); */
 		int r;
 		for (r = i-1; r >= 0; r--) {
-			printf("GE: Eliminating row %d\n", r);
+			/* printf("GE: Eliminating row %d\n", r); */
 			double coeff = mat[r][i];
 			subtract_row(i, r, coeff, nrow, ncol, mat);
 		}
