@@ -10,9 +10,10 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
 int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 int rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
+int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
 
 int main(int argc, char* argv[]) {
-	int n = 3; /* Size of the matrix */
+	/* int n = 3; */ /* Size of the matrix */
 	
 	/* Get and print input matrix */
 	double mat[3][3] = { {0, 3, 2}, {1, 0, 2}, {0, 0, 1} };
@@ -20,17 +21,18 @@ int main(int argc, char* argv[]) {
 	int ncol = sizeof(mat[0]) / sizeof(mat[0][0]);
 
 	print_mat(nrow, ncol, mat);
-	
-	/* Check if the matrix contains 0-rows or 0-columns */
-	
+
+	int success = invert_matrix(nrow, ncol, mat);
+	printf("Inversion success: %d", success);
 
 	/* If not, augment matrix and print the result */
-	double mat_aug[n][2 * n];
-
-	augment_mat(n, mat, mat_aug);
-	
-	printf("Augmented matrix:\n");
-	print_mat(n, 2 * n, mat_aug);
+	/* 
+	* double mat_aug[n][2 * n];
+	* augment_mat(n, mat, mat_aug);
+	*
+	* printf("Augmented matrix:\n");
+	* print_mat(n, 2 * n, mat_aug);
+	*/
 
 	/*
 	* swap_rows(0, 1, n, 2 * n, mat_aug);
@@ -50,34 +52,49 @@ int main(int argc, char* argv[]) {
 	* print_mat(n, 2 * n, mat_aug);
 	* */
 
+	return 0;
+}
+
+int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
+	int n = nrow;
+
+	/* Augment identity */
+	double mat_aug[n][2 * n];
+	augment_mat(n, mat, mat_aug);
+
+	/* Forward elimination */
 	int res = gaussian_elimination(n, 2 * n, mat_aug);
 	if (res == 1) {
 		printf("GE successsful\n");
 	} else {
 		printf("GE failed\n");
+		return 0;
 	}
 
 	printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
 	print_mat(n, 2 * n, mat_aug);
 
 	
+	/* Backward elimination */
 	int res2 = rref(n, 2 * n, mat_aug);
 	if (res2 == 1) {
 		printf("RREF successful\n");
 	} else {
 		printf("RREF failed\n");
+		return 0;
 	}
 
 	printf("Matrix after RREF\n");
 	print_mat(n, 2 * n, mat_aug);
 
+	/* Extract inverse */
 	double mat_inv[n][n];
 	extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
 	printf("The extracted inverse matrix\n");
 	print_mat(n, n, mat_inv);
-
-	return 0;
+	
+	return 1;
 }
 
 /* Extract the augmented part of the augmented matrix */
