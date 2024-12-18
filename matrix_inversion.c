@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h> /* getcwd */
 #include <stdbool.h>
+#include <dirent.h> /* readdir */
+/* #include <string.h> */ /* strstr */
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
@@ -13,6 +15,7 @@ int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 int rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
 int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
+bool invert_mat_from_file(char* fname);
 
 /* TODO: Change return values to true/false */
 
@@ -42,9 +45,50 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}	
 
+	const char *directory_path = "HPC.ParallelMatrixInversion/test_matrices/";
+        DIR *dir = opendir(directory_path);
+	if (!dir) {
+		perror("opendir");
+		return 1;
+	}
+
+
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL) {
+	/* Skip directories (there shouldn't be any) */
+		if (entry->d_type == DT_REG) {
+			/* process_file(entry->d_name); */
+			/* printf("file name %s", entry->d_name); */
+			invert_mat_from_file(entry->d_name);
+		}
+	}
+	closedir(dir);
+
 	return 0;
 }
 
+bool invert_mat_from_file(char* fname) {
+	int nrow, ncol;
+	char kind;
+
+	/* Extract dimensions and type of matrix (invertible or singular) from the filename */
+	if (sscanf(fname, "mat_%dx%d_%c", &nrow, &ncol, &kind) != 3) {
+		printf("Invalid filename format: %s\n", fname);
+		return false;
+	}
+
+	printf("Read %dx%d matrix from %s ", nrow, ncol, fname);
+	printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
+
+	/*
+	FILE *fp = fopen(fname, "r");
+	if (!fp) {
+		perror("Error opening file");
+		return;
+	}
+	*/
+	return true;
+}
       
 int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	int n = nrow;
