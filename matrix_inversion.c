@@ -18,6 +18,8 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 bool invert_mat_from_file(const char* dir, const char* fname);
 void print_working_dir();
 void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
+void copy_mat(int nrow, int ncol, double src[nrow][ncol], double dest[nrow][ncol]);
+
 
 
 int main(int argc, char* argv[]) {
@@ -75,7 +77,11 @@ void print_working_dir() {
 	}
 }
 
-void multiply_sq_mats(int nrow, int ncol, double  m1[nrow][ncol], double m2[nrow][ncol]) {
+void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]) {
+	printf("Multiplying following matrices:\n");
+	print_mat(nrow, ncol, m1);
+	print_mat(nrow, ncol, m2);
+
 	double mat_res[nrow][ncol];
 	int i, j, k;
 
@@ -88,6 +94,7 @@ void multiply_sq_mats(int nrow, int ncol, double  m1[nrow][ncol], double m2[nrow
 			}
 		}
 	}
+	printf("Result of multiplication:\n");
 	print_mat(nrow, ncol, mat_res);
 }
 
@@ -113,7 +120,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 		return false;
 	}
 
-	/* Read file */
+	/* Open the file */
 	printf("Trying to read %dx%d matrix from %s ", nrow, ncol, full_path);
 	printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 	
@@ -124,13 +131,15 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 		return false;
 	}
 
+	/* Scan the file and read the matrix */
 	int i, j;
 	double mat[nrow][ncol];
+
 	for (i = 0; i < nrow; ++i) {
-			for (j = 0; j < ncol; ++j) {
-				if (fscanf(fp, "%lf", &mat[i][j]) != 1) {
-					printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
-					fclose(fp);
+		for (j = 0; j < ncol; ++j) {
+			if (fscanf(fp, "%lf", &mat[i][j]) != 1) {
+				printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
+				fclose(fp);
 				return false;
 			}
 		}
@@ -139,17 +148,23 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	fclose(fp);
 	free(full_path);
 
-	print_mat(nrow, ncol, mat);
+	/* Create a copy of the input matrix before inverting it */
+	double mat_cp[nrow][ncol];
+	copy_mat(nrow, ncol, mat, mat_cp);
+
+	/* print_mat(nrow, ncol, mat); */
 
 	/* Invert the matrix */
 	double mat_inv[nrow][ncol];
-	bool res = invert_matrix(nrow, ncol, mat, mat_inv);
+	bool res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
 	if (res) {
 		/* print_mat(nrow, ncol, mat_inv); */
 		multiply_sq_mats(nrow, ncol, mat, mat_inv);
 	}
 	
 	/* Check if the result is correct */
+
+	printf("\n\n");
 
 	return true;
 }
@@ -363,6 +378,15 @@ void print_mat(int nrow, int ncol, double mat[nrow][ncol]) {
 			printf("%.2f \t", mat[i][j]);
 		}
 		printf("\n");
+	}
+}
+
+void copy_mat(int nrow, int ncol, double src[nrow][ncol], double dest[nrow][ncol]) {
+	int i, j;
+	for (i = 0; i < nrow; i++) {
+		for (j = 0; j < ncol; j++) {
+			dest[i][j] = src[i][j];
+		}
 	}
 }
 
