@@ -4,7 +4,7 @@
 #include <unistd.h> /* getcwd */
 #include <stdbool.h>
 #include <dirent.h> /* readdir */
-/* #include <string.h> */ /* strstr */
+#include <string.h> /* strlen */
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
@@ -15,7 +15,8 @@ int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 int rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
 int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
-bool invert_mat_from_file(char* fname);
+bool invert_mat_from_file(const char* dir, const char* fname);
+void print_working_dir();
 
 /* TODO: Change return values to true/false */
 
@@ -23,19 +24,14 @@ int main(int argc, char* argv[]) {
 	/* int n = 3; */ /* Size of the matrix */
 	
 	/* Get and print input matrix */
+	/*
 	double mat[3][3] = { {0, 3, 2}, {1, 0, 2}, {0, 0, 1} };
 	int nrow = sizeof(mat) / sizeof(mat[0]);
 	int ncol = sizeof(mat[0]) / sizeof(mat[0][0]);
 
-	print_mat(nrow, ncol, mat);
+ 	print_mat(nrow, ncol, mat);
+	*/
 
-	/* Check the working directory */
-	char cwd[1024];
-	if (getcwd(cwd, sizeof(cwd)) != NULL) {
-		printf("Current working directory: %s\n", cwd);
-	} else {
-		perror("getcwd");
-	}
 	
 	FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
 	/* FILE *fp = fopen("test_matrices.txt", "r"); */
@@ -52,6 +48,8 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	printf("Opening dir %s successfull\n", directory_path);
+
 
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
@@ -59,7 +57,7 @@ int main(int argc, char* argv[]) {
 		if (entry->d_type == DT_REG) {
 			/* process_file(entry->d_name); */
 			/* printf("file name %s", entry->d_name); */
-			invert_mat_from_file(entry->d_name);
+			invert_mat_from_file(directory_path, entry->d_name);
 		}
 	}
 	closedir(dir);
@@ -67,7 +65,31 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-bool invert_mat_from_file(char* fname) {
+void print_working_dir() {	
+	/* Check the working directory */
+	char cwd[1024];
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+		printf("Current working directory: %s\n", cwd);
+	} else {
+		perror("getcwd");
+	}
+}
+
+bool invert_mat_from_file(const char* dir, const char* fname) {
+	/* Create the target file path  */
+	char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
+
+	if (!full_path) {
+		perror("malloc");
+		return false;
+	}
+
+	strcpy(full_path, dir);
+	strcat(full_path, fname);
+	printf("full path: %s\n", full_path);
+	/* */
+
+	printf("Reading matrix from file %s\n", fname);
 	int nrow, ncol;
 	char kind;
 
@@ -77,12 +99,13 @@ bool invert_mat_from_file(char* fname) {
 		return false;
 	}
 
-	printf("Read %dx%d matrix from %s ", nrow, ncol, fname);
+	printf("Trying to read %dx%d matrix from %s ", nrow, ncol, full_path);
 	printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 	
-	FILE *fp = fopen(fname, "r");
+	FILE *fp = fopen(full_path, "r");
 	if (!fp) {
 		perror("Error opening file");
+		print_working_dir();
 		return false;
 	}
 
