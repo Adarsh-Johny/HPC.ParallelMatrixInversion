@@ -17,8 +17,8 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
 bool invert_mat_from_file(const char* dir, const char* fname);
 void print_working_dir();
+void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
 
-/* TODO: Change return values to true/false */
 
 int main(int argc, char* argv[]) {
 	/* int n = 3; */ /* Size of the matrix */
@@ -75,6 +75,22 @@ void print_working_dir() {
 	}
 }
 
+void multiply_sq_mats(int nrow, int ncol, double  m1[nrow][ncol], double m2[nrow][ncol]) {
+	double mat_res[nrow][ncol];
+	int i, j, k;
+
+	for (i = 0; i < nrow; i++) {
+		for (j = 0; j < ncol; j++) {
+			mat_res[i][j] = 0;
+
+			for (k = 0; k < nrow; k++) {
+				mat_res[i][j] += m1[i][k] * m2[k][j];
+			}
+		}
+	}
+	print_mat(nrow, ncol, mat_res);
+}
+
 bool invert_mat_from_file(const char* dir, const char* fname) {
 	/* Create the target file path  */
 	char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
@@ -129,7 +145,8 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	double mat_inv[nrow][ncol];
 	bool res = invert_matrix(nrow, ncol, mat, mat_inv);
 	if (res) {
-		print_mat(nrow, ncol, mat_inv);
+		/* print_mat(nrow, ncol, mat_inv); */
+		multiply_sq_mats(nrow, ncol, mat, mat_inv);
 	}
 	
 	/* Check if the result is correct */
@@ -169,7 +186,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 	printf("Matrix after RREF\n");
 	print_mat(n, 2 * n, mat_aug);
 
-	/* Extract inverse */
+	/* Extract inverse if it the steps before were successfull */
 	/* double mat_inv[n][n]; */
 	extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
@@ -195,7 +212,7 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
 	int i; 
 	/* printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol); */
-	print_mat(nrow, ncol, mat);
+	/* print_mat(nrow, ncol, mat); */
 
 	for (i = nrow - 1; i > 0; i--) {
 		/* printf("GE: Eliminating the rows above %d\n", i); */
@@ -217,7 +234,7 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 
 	/* Iterate the rows of mat */
 	for (i = 0; i < nrow; i++) {
-		printf("GE: i = %d, diagonal value %f\n", i, mat[i][i]);
+		/* printf("GE: i = %d, diagonal value %f\n", i, mat[i][i]); */
 		
 		/* Check if the diagonal is zero: if it is, swap find another row where the current column 
 		 * contains a non-zero value */
@@ -234,8 +251,10 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 			for (r = i+1; r < nrow; r++) {
 				if (mat[r][i] != 0) {
 					swap_rows(i, r, nrow, ncol, mat);
+					/*
 					printf("GE: rows %d and %d swapped, resulting matrix\n", i, r);
 					print_mat(nrow, ncol, mat);
+					*/
 				}
 			}
 
@@ -243,7 +262,7 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 			/* Normalize and eliminate */
 			double s = 1/mat[i][i];
 			multiply_row(i, s, nrow, ncol, mat);
-			printf("Row %d normalized\n", i);
+			/* printf("Row %d normalized\n", i); */
 
 			/* If we are on the last row, finish */
 			if (i == nrow - 1) {
@@ -254,7 +273,7 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 			printf("GE: Eliminating the rows below %d\n", i);
 			int r;
 			for (r = i+1; r < nrow; r++) {
-				printf("GE: Eliminating row %d\n", r);
+				/* printf("GE: Eliminating row %d\n", r); */
 				double coeff = mat[r][i];
 				subtract_row(i, r, coeff, nrow, ncol, mat);				
 			}
@@ -269,7 +288,7 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 /* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]) {
 	/* TODO: debug printing */
-	printf("Subtracting %d * %.2f from %d\n", row_idx, coeff, target_idx);
+	/* printf("Subtracting %d * %.2f from %d\n", row_idx, coeff, target_idx); */
 
 	if (row_idx < 0 || row_idx >= nrow) {
 		printf("Subtract row: invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
@@ -281,7 +300,7 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
 
 	int i;
 	for (i = 0; i < ncol; i++) {
-		printf("i = %d\n", i);
+		/* printf("i = %d\n", i); */
 		mat[target_idx][i] -= mat[row_idx][i] * coeff;
 	}
 }
