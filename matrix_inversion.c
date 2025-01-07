@@ -14,7 +14,7 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
 bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
 bool rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
-bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
 bool invert_mat_from_file(const char* dir, const char* fname);
 void print_working_dir();
 
@@ -121,18 +121,23 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	}
 
 	fclose(fp);
+	free(full_path);
 
 	print_mat(nrow, ncol, mat);
 
 	/* Invert the matrix */
-
+	double mat_inv[nrow][ncol];
+	bool res = invert_matrix(nrow, ncol, mat, mat_inv);
+	if (res) {
+		print_mat(nrow, ncol, mat_inv);
+	}
 	
 	/* Check if the result is correct */
 
 	return true;
 }
-      
-bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
+ 
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]) {
 	int n = nrow;
 
 	/* Augment identity */
@@ -165,7 +170,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	print_mat(n, 2 * n, mat_aug);
 
 	/* Extract inverse */
-	double mat_inv[n][n];
+	/* double mat_inv[n][n]; */
 	extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
 	printf("The extracted inverse matrix\n");
