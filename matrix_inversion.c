@@ -11,10 +11,10 @@ void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]);
 void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][ncol]);
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
-int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
-int rref(int nrow, int ncol, double mat[nrow][ncol]);
+bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
+bool rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
-int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol]);
 bool invert_mat_from_file(const char* dir, const char* fname);
 void print_working_dir();
 
@@ -132,7 +132,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	return true;
 }
       
-int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	int n = nrow;
 
 	/* Augment identity */
@@ -140,12 +140,12 @@ int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	augment_mat(n, mat, mat_aug);
 
 	/* Forward elimination */
-	int res = gaussian_elimination(n, 2 * n, mat_aug);
-	if (res == 1) {
+	bool res = gaussian_elimination(n, 2 * n, mat_aug);
+	if (res) {
 		printf("GE successsful\n");
 	} else {
 		printf("GE failed\n");
-		return 0;
+		return false;
 	}
 
 	printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
@@ -153,12 +153,12 @@ int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 
 	
 	/* Backward elimination */
-	int res2 = rref(n, 2 * n, mat_aug);
-	if (res2 == 1) {
+	bool res2 = rref(n, 2 * n, mat_aug);
+	if (res2) {
 		printf("RREF successful\n");
 	} else {
 		printf("RREF failed\n");
-		return 0;
+		return false;
 	}
 
 	printf("Matrix after RREF\n");
@@ -171,7 +171,7 @@ int invert_matrix(int nrow, int ncol, double mat[nrow][ncol]) {
 	printf("The extracted inverse matrix\n");
 	print_mat(n, n, mat_inv);
 	
-	return 1;
+	return true;
 }
 
 /* Extract the augmented part of the augmented matrix */
@@ -187,7 +187,7 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 }
 
 /* Second part of the Gauss-Jordan elimination, results in the reduced row echelon form */
-int rref(int nrow, int ncol, double mat[nrow][ncol]) {
+bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
 	int i; 
 	/* printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol); */
 	print_mat(nrow, ncol, mat);
@@ -201,13 +201,13 @@ int rref(int nrow, int ncol, double mat[nrow][ncol]) {
 			subtract_row(i, r, coeff, nrow, ncol, mat);
 		}
 	}
-	return 1;
+	return true;
 }
 
 
 /* Results in unreduced row echelon form in which the pivots are normalized.
  * Operates on a square matrix or the square part of an augmented matrix. */
-int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
+bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 	int i, r;
 
 	/* Iterate the rows of mat */
@@ -222,7 +222,7 @@ int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 			if (i == nrow - 1) {
 				printf("GE: there's something wrong with the matrix\n");
 				print_mat(nrow, ncol, mat);
-				return 0;
+				return false;
 			}
 
 			/* Find row below the current row in which there's no 0 */
@@ -243,7 +243,7 @@ int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 			/* If we are on the last row, finish */
 			if (i == nrow - 1) {
 				printf("GE: We are on the last row %d/%d\n", i, nrow);
-				return 1;
+				return true;
 			}
 
 			printf("GE: Eliminating the rows below %d\n", i);
@@ -254,11 +254,11 @@ int gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 				subtract_row(i, r, coeff, nrow, ncol, mat);				
 			}
 
-			return 1;
+			return true;
 		}
 	}
 	printf("GE: diagonal is nonzero\n");
-	return 1;
+	return true;
 }
 
 /* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
