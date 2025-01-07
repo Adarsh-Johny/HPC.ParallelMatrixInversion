@@ -88,10 +88,10 @@ bool invert_mat_from_file(char* fname) {
 
 	int i, j;
 	double mat[nrow][ncol];
-	for (int i = 0; i < nrow; ++i) {
-			for (int j = 0; j < ncol; ++j) {
+	for (i = 0; i < nrow; ++i) {
+			for (j = 0; j < ncol; ++j) {
 				if (fscanf(fp, "%lf", &mat[i][j]) != 1) {
-					printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, filename);
+					printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
 					fclose(fp);
 				return false;
 			}
