@@ -80,25 +80,24 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
 
 	if (!full_path) {
-		perror("malloc");
+		perror("malloc (concatenate file path)");
 		return false;
 	}
 
 	strcpy(full_path, dir);
 	strcat(full_path, fname);
-	printf("full path: %s\n", full_path);
-	/* */
-
+	
+	/* Extract dimensions and type of matrix (invertible or singular) from the filename */
 	printf("Reading matrix from file %s\n", fname);
 	int nrow, ncol;
 	char kind;
 
-	/* Extract dimensions and type of matrix (invertible or singular) from the filename */
 	if (sscanf(fname, "mat_%dx%d_%c", &nrow, &ncol, &kind) != 3) {
 		printf("Invalid filename format: %s\n", fname);
 		return false;
 	}
 
+	/* Read file */
 	printf("Trying to read %dx%d matrix from %s ", nrow, ncol, full_path);
 	printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 	
@@ -124,7 +123,12 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	fclose(fp);
 
 	print_mat(nrow, ncol, mat);
+
+	/* Invert the matrix */
+
 	
+	/* Check if the result is correct */
+
 	return true;
 }
       
