@@ -7,19 +7,26 @@
 #include <string.h> /* strlen */
 #include <math.h> /* fabs */
 
-void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
+/* Serial implementation */
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
+bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
+bool rref(int nrow, int ncol, double mat[nrow][ncol]);
+
+/* Serial helper functions */
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]);
 void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][ncol]);
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
-bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]);
-bool rref(int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
-bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
+
+/* Run test matrices */
 bool invert_mat_from_file(const char* dir, const char* fname);
-void print_working_dir();
+
+/* Testing/debugging functions */
 bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
 void copy_mat(int nrow, int ncol, double src[nrow][ncol], double dest[nrow][ncol]);
+void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
+void print_working_dir();
 
 
 
@@ -37,7 +44,6 @@ int main(int argc, char* argv[]) {
 
 
     FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
-    /* FILE *fp = fopen("test_matrices.txt", "r"); */
     /* Check that the file exists */
     if (!fp) {
 	perror("fopen");
@@ -51,15 +57,13 @@ int main(int argc, char* argv[]) {
 	return 1;
     }
 
-    printf("Opening dir %s successfull\n", directory_path);
+    printf("Opened dir %s\n", directory_path);
 
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
 	/* Skip directories (there shouldn't be any) */
 	if (entry->d_type == DT_REG) {
-	    /* process_file(entry->d_name); */
-	    /* printf("file name %s", entry->d_name); */
 	    invert_mat_from_file(directory_path, entry->d_name);
 	}
     }
@@ -128,10 +132,10 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	return false;
     }
 
-    /* Open the file */
-    printf("Trying to read %dx%d matrix from %s ", nrow, ncol, full_path);
+    printf("Reading %dx%d matrix from %s ", nrow, ncol, full_path);
     printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 
+    /* Open the file */
     FILE *fp = fopen(full_path, "r");
     if (!fp) {
 	perror("Error opening file");
@@ -175,7 +179,6 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     }
 
     printf("\n\n");
-
     return true;
 }
 
@@ -195,9 +198,10 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 	return false;
     }
 
+    /*
     printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
     print_mat(n, 2 * n, mat_aug);
-
+    */
 
     /* Backward elimination */
     bool res2 = rref(n, 2 * n, mat_aug);
@@ -208,15 +212,18 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 	return false;
     }
 
+    /*
     printf("Matrix after RREF\n");
     print_mat(n, 2 * n, mat_aug);
+    */
 
     /* Extract inverse if it the steps before were successfull */
-    /* double mat_inv[n][n]; */
     extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
+    /*
     printf("The extracted inverse matrix\n");
     print_mat(n, n, mat_inv);
+    */
 
     return true;
 }
@@ -289,7 +296,6 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 	}
     }
 
-    printf("Gaussian elimination done (upper triangular matrix wiht nonzero diagonal)\n");
     return true;
 }
 
