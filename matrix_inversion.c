@@ -18,7 +18,7 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
 bool invert_mat_from_file(const char* dir, const char* fname);
 void print_working_dir();
-void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
+bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
 void copy_mat(int nrow, int ncol, double src[nrow][ncol], double dest[nrow][ncol]);
 
 
@@ -78,11 +78,8 @@ void print_working_dir() {
 	}
 }
 
-void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]) {
-	printf("Multiplying following matrices:\n");
-	print_mat(nrow, ncol, m1);
-	print_mat(nrow, ncol, m2);
-
+bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]) {
+	bool success = true;
 	double mat_res[nrow][ncol];
 	int i, j, k;
 
@@ -93,10 +90,19 @@ void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow]
 			for (k = 0; k < nrow; k++) {
 				mat_res[i][j] += m1[i][k] * m2[k][j];
 			}
+			
+			/* Check if the result is identity (will fail if there are nans or +-inf) */
+			if (i == j && fabs(1 - mat_res[i][j]) > 1e-9) {
+				success = false;
+			}
+			
+			if (i != j && fabs(mat_res[i][j]) > 1e-9) {
+				success = false;
+			}
 		}
 	}
-	printf("Result of multiplication:\n");
-	print_mat(nrow, ncol, mat_res);
+
+	return success;
 }
 
 /* A method to run test matrices on invert_matrix */
@@ -157,17 +163,22 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	/* Invert the matrix */
 	double mat_inv[nrow][ncol];
 	bool res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
-	if (res) {
-		multiply_sq_mats(nrow, ncol, mat, mat_inv);
+
+	if (res && kind == 'i') {
+	        if (check_inverse(nrow, ncol, mat, mat_inv)) {
+		    	printf("Found correct inverse\n");
+	        } else {
+			printf("ERROR: Didn't find inverse for invertible matrix\n");
+	        }
+	} else if (!res && kind == 'i') {
+	        printf("ERROR: Failed to invert invertible matrix\n");
 	}
-	
-	/* Check if the result is correct */
 
 	printf("\n\n");
 
 	return true;
 }
- 
+
 bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]) {
 	int n = nrow;
 
