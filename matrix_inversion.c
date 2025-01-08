@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <dirent.h> /* readdir */
 #include <string.h> /* strlen */
+#include <math.h> /* fabs */
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]);
@@ -98,6 +99,7 @@ void multiply_sq_mats(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow]
 	print_mat(nrow, ncol, mat_res);
 }
 
+/* A method to run test matrices on invert_matrix */
 bool invert_mat_from_file(const char* dir, const char* fname) {
 	/* Create the target file path  */
 	char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
@@ -152,13 +154,10 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	double mat_cp[nrow][ncol];
 	copy_mat(nrow, ncol, mat, mat_cp);
 
-	/* print_mat(nrow, ncol, mat); */
-
 	/* Invert the matrix */
 	double mat_inv[nrow][ncol];
 	bool res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
 	if (res) {
-		/* print_mat(nrow, ncol, mat_inv); */
 		multiply_sq_mats(nrow, ncol, mat, mat_inv);
 	}
 	
@@ -242,68 +241,50 @@ bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
 }
 
 
-/* Results in unreduced row echelon form in which the pivots are normalized.
- * Operates on a square matrix or the square part of an augmented matrix. */
+/* Normalize pivots and clear nonzero values below diagonal */
 bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 	int i, r;
 
 	/* Iterate the rows of mat */
 	for (i = 0; i < nrow; i++) {
-		/* printf("GE: i = %d, diagonal value %f\n", i, mat[i][i]); */
-		
-		/* Check if the diagonal is zero: if it is, swap find another row where the current column 
-		 * contains a non-zero value */
-		if (mat[i][i] == 0) {
-			/* If we are on the last row and the diagonal is 0, 
-			 * there's a zero column. The matrix is not invertible so return 0 */
-			if (i == nrow - 1) {
-				printf("GE: there's something wrong with the matrix\n");
-				print_mat(nrow, ncol, mat);
+		if (fabs(mat[i][i]) < 1e-9) {
+
+
+			/* Find row below the current row where the current column index is nonzero */
+			bool found = false;
+			for (r = i+1; r < nrow; r++) {
+				if (fabs(mat[r][i]) > 1e-9) {
+					swap_rows(i, r, nrow, ncol, mat);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				printf("Matrix is singular or nearly singular\n");
 				return false;
 			}
 
-			/* Find row below the current row in which there's no 0 */
-			for (r = i+1; r < nrow; r++) {
-				if (mat[r][i] != 0) {
-					swap_rows(i, r, nrow, ncol, mat);
-					/*
-					printf("GE: rows %d and %d swapped, resulting matrix\n", i, r);
-					print_mat(nrow, ncol, mat);
-					*/
-				}
-			}
+		}
 
-		} else {
-			/* Normalize and eliminate */
-			double s = 1/mat[i][i];
-			multiply_row(i, s, nrow, ncol, mat);
-			/* printf("Row %d normalized\n", i); */
+		/* Normalize the row */
+		double s = 1/mat[i][i];
+		multiply_row(i, s, nrow, ncol, mat);
 
-			/* If we are on the last row, finish */
-			if (i == nrow - 1) {
-				printf("GE: We are on the last row %d/%d\n", i, nrow);
-				return true;
-			}
-
-			printf("GE: Eliminating the rows below %d\n", i);
-			int r;
-			for (r = i+1; r < nrow; r++) {
-				/* printf("GE: Eliminating row %d\n", r); */
-				double coeff = mat[r][i];
-				subtract_row(i, r, coeff, nrow, ncol, mat);				
-			}
-
-			return true;
+		/* Eliminate nonzero values below */
+		int r;
+		for (r = i+1; r < nrow; r++) {
+			double coeff = mat[r][i];
+			subtract_row(i, r, coeff, nrow, ncol, mat);
 		}
 	}
-	printf("GE: diagonal is nonzero\n");
+
+	printf("Gaussian elimination done (upper triangular matrix wiht nonzero diagonal)\n");
 	return true;
 }
 
 /* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]) {
 	/* TODO: debug printing */
-	/* printf("Subtracting %d * %.2f from %d\n", row_idx, coeff, target_idx); */
 
 	if (row_idx < 0 || row_idx >= nrow) {
 		printf("Subtract row: invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
@@ -315,13 +296,11 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
 
 	int i;
 	for (i = 0; i < ncol; i++) {
-		/* printf("i = %d\n", i); */
 		mat[target_idx][i] -= mat[row_idx][i] * coeff;
 	}
 }
 
-void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]) {
-	
+void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]) {	
 	/* TODO: remove later, random debugging */
 	if (row_idx < 0 || row_idx >= nrow) {
 		printf("Multiply row: invalid row index %d for matrix %d x %d", row_idx, nrow, ncol);
@@ -335,9 +314,7 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
 }
 
 
-/* Possibly parallelizable or to combine with sth else */
 void swap_rows(int r1, int r2, int nrow, int ncol, double mat[nrow][ncol]) {
-
 	/* TODO: remove later, random debugging */
 	if (r1 < 0 || r1 >= nrow) {
 		printf("Swap row: invalid row index %d for %d x %d matrix", r1, nrow, ncol);
