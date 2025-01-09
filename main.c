@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 
     printf("Opened dir %s\n", directory_path);
 
-    struct dirent *entry;
     while ((entry = readdir(dir)) != NULL)
     {
         // Construct the full path to the file
