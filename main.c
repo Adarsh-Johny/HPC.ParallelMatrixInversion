@@ -57,9 +57,10 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool invert_mat_from_file(const char *dir, const char *fname)
+/* A method to run test matrices on invert_matrix */
+bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *ncol, double ***mat)
 {
-    /* Create the target file path  */
+    /* Create the target file path */
     char *full_path = malloc(strlen(dir) + strlen(fname) + 2); // +2 for '/' and '\0'
 
     if (!full_path)
@@ -74,16 +75,16 @@ bool invert_mat_from_file(const char *dir, const char *fname)
 
     /* Extract dimensions from the filename */
     printf("Reading matrix from file %s\n", fname);
-    int nrow, ncol, index;
+    int index;
 
-    if (sscanf(fname, "matrix_%dx%d_%02d.txt", &nrow, &ncol, &index) != 3)
+    if (sscanf(fname, "matrix_%dx%d_%02d.txt", nrow, ncol, &index) != 3)
     {
         printf("Invalid filename format: %s\n", fname);
         free(full_path);
         return false;
     }
 
-    printf("Reading %dx%d matrix from %s\n", nrow, ncol, full_path);
+    printf("Reading %dx%d matrix from %s\n", *nrow, *ncol, full_path);
 
     /* Open the file */
     FILE *fp = fopen(full_path, "r");
@@ -94,15 +95,19 @@ bool invert_mat_from_file(const char *dir, const char *fname)
         return false;
     }
 
-    /* Scan the file and read the matrix */
-    int i, j;
-    double mat[nrow][ncol];
-
-    for (i = 0; i < nrow; ++i)
+    /* Allocate memory for the matrix */
+    *mat = (double **)malloc(*nrow * sizeof(double *));
+    for (int i = 0; i < *nrow; ++i)
     {
-        for (j = 0; j < ncol; ++j)
+        (*mat)[i] = (double *)malloc(*ncol * sizeof(double));
+    }
+
+    /* Scan the file and read the matrix */
+    for (int i = 0; i < *nrow; ++i)
+    {
+        for (int j = 0; j < *ncol; ++j)
         {
-            if (fscanf(fp, "%lf", &mat[i][j]) != 1)
+            if (fscanf(fp, "%lf", &(*mat)[i][j]) != 1)
             {
                 printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
                 fclose(fp);
@@ -114,18 +119,27 @@ bool invert_mat_from_file(const char *dir, const char *fname)
 
     fclose(fp);
     free(full_path);
+    return true;
+}
 
-    /* Create a copy of the input matrix before inverting it */
-    double mat_cp[nrow][ncol];
-    copy_mat(nrow, ncol, mat, mat_cp);
+void copy_matrix(int nrow, int ncol, double **source, double dest[nrow][ncol])
+{
+    for (int i = 0; i < nrow; ++i)
+    {
+        for (int j = 0; j < ncol; ++j)
+        {
+            dest[i][j] = source[i][j];
+        }
+    }
+}
 
-    /* Invert the matrix */
-    double mat_inv[nrow][ncol];
-    bool res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
+bool invert_matrix_and_validate(int nrow, int ncol, double source[nrow][ncol], double inverse[nrow][ncol])
+{
+    bool res = invert_matrix(nrow, ncol, source, inverse);
 
     if (res)
     {
-        if (check_inverse(nrow, ncol, mat, mat_inv))
+        if (check_inverse(nrow, ncol, source, inverse))
         {
             printf("Found correct inverse\n");
         }
@@ -138,6 +152,34 @@ bool invert_mat_from_file(const char *dir, const char *fname)
     {
         printf("ERROR: Failed to invert matrix\n");
     }
+
+    return res;
+}
+
+bool invert_matrix_from_file(const char *dir, const char *fname)
+{
+    int nrow, ncol;
+    double **mat;
+
+    if (!read_matrix_from_file(dir, fname, &nrow, &ncol, &mat))
+    {
+        return false;
+    }
+
+    /* Create a copy of the input matrix before inverting it */
+    double mat_cp[nrow][ncol];
+    copy_matrix(nrow, ncol, mat, mat_cp);
+
+    /* Invert the matrix */
+    double mat_inv[nrow][ncol];
+    invert_matrix_and_validate(nrow, ncol, mat_cp, mat_inv);
+
+    /* Free allocated memory */
+    for (int i = 0; i < nrow; ++i)
+    {
+        free(mat[i]);
+    }
+    free(mat);
 
     printf("\n\n");
     return true;
