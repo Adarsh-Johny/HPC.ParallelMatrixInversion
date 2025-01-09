@@ -7,6 +7,8 @@
 #include <math.h>   /* fabs */
 #include <dirent.h> /* DIR, readdir */
 #include <string.h> /* strlen */
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /* Run test matrices */
 bool invert_mat_from_file(const char *dir, const char *fname);
@@ -46,12 +48,18 @@ int main(int argc, char *argv[])
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL)
     {
-        /* Skip directories (there shouldn't be any) */
-        if (entry->d_type == DT_REG)
+        // Construct the full path to the file
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", directory_path, entry->d_name);
+
+        // Use stat() to check if it's a regular file
+        struct stat file_stat;
+        if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
         {
             invert_mat_from_file(directory_path, entry->d_name);
         }
     }
+
     closedir(dir);
 
     return 0;
