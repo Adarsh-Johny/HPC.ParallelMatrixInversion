@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
        print_mat(nrow, ncol, mat);
        */
 
-    FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
-    /* Check that the file exists */
-    if (!fp)
-    {
-        perror("fopen");
-        return 1;
-    }
+    // FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
+    // /* Check that the file exists */
+    // if (!fp)
+    // {
+    //     perror("fopen");
+    //     return 1;
+    // }
 
     const char *directory_path = "HPC.ParallelMatrixInversion/test_matrices/";
     DIR *dir = opendir(directory_path);
