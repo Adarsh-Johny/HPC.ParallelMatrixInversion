@@ -36,7 +36,9 @@ int main(int argc, char *argv[])
     // }
 
     const char *directory_path = "HPC.ParallelMatrixInversion/test_matrices/";
+    struct dirent *entry;
     DIR *dir = opendir(directory_path);
+
     if (!dir)
     {
         perror("opendir");
