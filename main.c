@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 
 /* Run test matrices */
-bool invert_mat_from_file(const char *dir, const char *fname);
+bool invert_matrix_from_file(const char *dir, const char *fname);
 bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
 
 int main(int argc, char *argv[])
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         struct stat file_stat;
         if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
         {
-            invert_mat_from_file(directory_path, entry->d_name);
+            invert_matrix_from_file(directory_path, entry->d_name);
         }
     }
 
