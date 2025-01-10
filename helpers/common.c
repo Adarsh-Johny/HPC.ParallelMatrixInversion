@@ -1,5 +1,6 @@
 #include <stdio.h>     /* printf (if needed elsewhere) */
 #include <stdlib.h>    /* malloc (if used elsewhere) */
+#include <unistd.h>    /* getcwd */
 #include <math.h>      /* fabs */
 #include <dirent.h>    /* DIR, readdir (if directory traversal is needed elsewhere) */
 #include <string.h>    /* strlen (if string operations are needed) */
@@ -140,3 +141,4 @@ void free_matrix(double **mat, int nrow)
     }
     free(mat);
 }
+
