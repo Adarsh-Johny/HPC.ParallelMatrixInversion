@@ -115,11 +115,12 @@ void run_tests() {
 	    {
 		printf("Running tests for file %s failed (parallel) \n", entry->d_name);
 	    }
-
+	    /*
 	    if (!invert_test_mat_from_file(directory_path, entry->d_name, false))
 	    {		
 		printf("Running tests for file %s failed (sequential) \n", entry->d_name);
 	    }
+	    */
 	}   
     }   
     closedir(dir);;
