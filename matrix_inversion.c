@@ -1,11 +1,11 @@
 #include "matrix_inversion.h"
 #include "helpers/common.h"
 
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <math.h> /* fabs */
+#include <sys/time.h> /* gettimeofday */
+#include <math.h>     /* fabs */
 
 bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
@@ -49,18 +49,39 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     print_mat(n, 2 * n, mat_aug);
     */
 
-    /* Extract inverse if it the steps before were successfull */
+    /* Extract inverse if the steps before were successful */
     extract_inverse(n, 2 * n, mat_aug, mat_inv);
-
-    /*
-    printf("The extracted inverse matrix\n");
-    print_mat(n, n, mat_inv);
-    */
 
     return true;
 }
 
-/* Extract the augmented part of the augmented matrix */
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
+{
+    struct timeval start, end;
+    double mat_inv[nrow][ncol];
+
+    /* Start timing */
+    gettimeofday(&start, NULL);
+
+    /* Call existing invert_matrix function */
+    if (!invert_matrix(nrow, ncol, mat, mat_inv))
+    {
+        printf("Matrix inversion failed during benchmarking.\n");
+        return;
+    }
+
+    /* End timing */
+    gettimeofday(&end, NULL);
+
+    /* Calculate elapsed time in milliseconds */
+    double elapsed_time = (end.tv_sec - start.tv_sec) * 1000.0; /* Seconds to milliseconds */
+    elapsed_time += (end.tv_usec - start.tv_usec) / 1000.0;     /* Microseconds to milliseconds */
+
+    printf("Matrix inversion (Serial) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
+}
+
+/* Existing functions (no changes) */
+
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
 {
     int i, j;
@@ -69,7 +90,6 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
     {
         for (j = 0; j < ncol; j++)
         {
-            /* Copy only the right side of the augmented matrix */
             mat_inv[i][j] = mat_aug[i][nrow + j];
         }
     }

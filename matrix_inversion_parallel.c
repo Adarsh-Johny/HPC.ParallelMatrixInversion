@@ -1,13 +1,55 @@
 #include "matrix_inversion_parallel.h"
 #include "helpers/common.h"
 #include <omp.h>
+
+// #include "/opt/homebrew/opt/libomp/include/omp.h" for MAC as this import is not working as usual
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h> /* getcwd */
 #include <stdbool.h>
-#include <dirent.h> /* readdir */
-#include <string.h> /* strlen */
-#include <math.h>	/* fabs */
+#include <dirent.h>	  /* readdir */
+#include <string.h>	  /* strlen */
+#include <math.h>	  /* fabs */
+#include <sys/time.h> /* gettimeofday */
+
+/* Function for benchmarking */
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
+{
+	struct timeval start, end;
+	double mat_inv[nrow][ncol];
+
+	/* Ensure threads are synchronized before timing */
+#pragma omp parallel
+	{
+#pragma omp barrier
+	}
+
+	/* Start timing */
+	gettimeofday(&start, NULL);
+
+	/* Perform matrix inversion */
+	if (!invert_matrix_par(nrow, ncol, mat, mat_inv))
+	{
+		printf("Matrix inversion failed during benchmarking.\n");
+		return;
+	}
+
+	/* Ensure threads are synchronized after execution */
+#pragma omp parallel
+	{
+#pragma omp barrier
+	}
+
+	/* End timing */
+	gettimeofday(&end, NULL);
+
+	/* Calculate elapsed time in milliseconds */
+	double elapsed_time = (end.tv_sec - start.tv_sec) * 1000.0; /* Seconds to milliseconds */
+	elapsed_time += (end.tv_usec - start.tv_usec) / 1000.0;		/* Microseconds to milliseconds */
+
+	printf("Matrix inversion (Parallel) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
+}
 
 bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
@@ -43,7 +85,7 @@ void extract_inverse_par(int nrow, int ncol, double mat_aug[nrow][ncol], double 
 	int i, j;
 	for (i = 0; i < nrow; i++)
 	{
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (j = 0; j < ncol; j++)
 		{
 			/* Copy only the right side of the augmented matrix */
@@ -122,7 +164,7 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 
 	for (row = 0; row < n; row++)
 	{
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (col = 0; col < n; col++)
 		{
 			/* Copy the row of original matrix */
@@ -137,13 +179,12 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
 {
 	int i;
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (i = 0; i < ncol; i++)
 	{
 		mat[target_idx][i] -= mat[row_idx][i] * coeff;
 	}
 }
-
 
 /* Multiply row elements by s */
 void multiply_row_par(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol])

@@ -8,11 +8,10 @@
 #include <math.h>    /* fabs */
 #include <stdbool.h> /* bool */
 
-#include <dirent.h> /* DIR, readdir */
+#include <dirent.h>    /* DIR, readdir */
 #include <sys/types.h> /* struct stat */
-#include <sys/stat.h> /* stat, IS_REG */
-/* #include <unistd.h> */
-#include <string.h> /* strlen, strcpy, strcat */
+#include <sys/stat.h>  /* stat, IS_REG */
+#include <string.h>    /* strlen, strcpy, strcat */
 
 /* Helper function declarations */
 double **allocate_and_read_matrix(const char *dir, const char *fname, int *nrow, int *ncol);
@@ -20,14 +19,46 @@ void process_serial_inversion(int nrow, int ncol, double **mat, double mat_inv[n
 void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result);
 bool invert_matrix_from_file(const char *dir, const char *fname);
 
-bool invert_test_mat_from_file(const char* dir, const char* fname, bool test_parallel);
+bool invert_test_mat_from_file(const char *dir, const char *fname, bool test_parallel);
 void run_tests();
 
-int main(int argc, char *argv[]) {
+// int main(int argc, char *argv[])
+// {
+//     run_tests();
+//     return 0;
+// }
 
-    run_tests();
+int main(int argc, char *argv[])
+{
+    const char *directory_path = "HPC.ParallelMatrixInversion/performance_test_matrices/";
+    struct dirent *entry;
+    DIR *dir = opendir(directory_path);
+
+    if (!dir)
+    {
+        perror("opendir");
+        return 1;
+    }
+
+    printf("Opened dir %s\n", directory_path);
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        // Construct the full path to the file
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", directory_path, entry->d_name);
+
+        // Use stat() to check if it's a regular file
+        struct stat file_stat;
+        if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
+        {
+            invert_matrix_from_file(directory_path, entry->d_name);
+        }
+    }
+
+    closedir(dir);
+
     return 0;
-
 }
 
 bool invert_matrix_from_file(const char *dir, const char *fname)
@@ -87,55 +118,57 @@ void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv
     *result = invert_matrix_par(nrow, ncol, mat_cp, mat_inv);
 }
 
-void run_tests() {
-
+void run_tests()
+{
     const char *directory_path = "HPC.ParallelMatrixInversion/test_matrices/";
     DIR *dir = opendir(directory_path);
-    if (!dir) {
-	perror("opendir");
-	printf("Couldn't open directory %s\n", directory_path);
-	return;
-    }   
+    if (!dir)
+    {
+        perror("opendir");
+        printf("Couldn't open directory %s\n", directory_path);
+        return;
+    }
 
     printf("Opened dir %s\n", directory_path);
 
-
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) 
+    while ((entry = readdir(dir)) != NULL)
     {
-	/* Skip directories (there shouldn't be any) */
-	/* if (entry->d_type == DT_REG) */
-	char full_path[1024];
+        /* Skip directories (there shouldn't be any) */
+        /* if (entry->d_type == DT_REG) */
+        char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", directory_path, entry->d_name);
 
-	struct stat file_stat;
+        struct stat file_stat;
         if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
-	{ 
-	    if (!invert_test_mat_from_file(directory_path, entry->d_name, true))
-	    {
-		printf("Running tests for file %s failed (parallel) \n", entry->d_name);
-	    }
-	    /*
-	    if (!invert_test_mat_from_file(directory_path, entry->d_name, false))
-	    {		
-		printf("Running tests for file %s failed (sequential) \n", entry->d_name);
-	    }
-	    */
-	}   
-    }   
-    closedir(dir);;
-}   
-
+        {
+            if (!invert_test_mat_from_file(directory_path, entry->d_name, true))
+            {
+                printf("Running tests for file %s failed (parallel) \n", entry->d_name);
+            }
+            /*
+            if (!invert_test_mat_from_file(directory_path, entry->d_name, false))
+            {
+            printf("Running tests for file %s failed (sequential) \n", entry->d_name);
+            }
+            */
+        }
+    }
+    closedir(dir);
+    ;
+}
 
 /* A method to run test matrices on invert_matrix */
-bool invert_test_mat_from_file(const char* dir, const char* fname, bool test_parallel) {
+bool invert_test_mat_from_file(const char *dir, const char *fname, bool test_parallel)
+{
     /* Create the target file path  */
-    char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
+    char *full_path = malloc(strlen(dir) + strlen(fname) + 1);
 
-    if (!full_path) {
-	perror("malloc (concatenate file path)");
-	return false;
-    }   
+    if (!full_path)
+    {
+        perror("malloc (concatenate file path)");
+        return false;
+    }
     strcpy(full_path, dir);
     strcat(full_path, fname);
 
@@ -144,9 +177,10 @@ bool invert_test_mat_from_file(const char* dir, const char* fname, bool test_par
     int nrow, ncol;
     char kind;
 
-    if (sscanf(fname, "matrix_%dx%d_%c", &nrow, &ncol, &kind) != 3) {
-	printf("Invalid filename format: %s\n", fname);
-	return false;
+    if (sscanf(fname, "matrix_%dx%d_%c", &nrow, &ncol, &kind) != 3)
+    {
+        printf("Invalid filename format: %s\n", fname);
+        return false;
     }
 
     printf("Reading %dx%d matrix from %s ", nrow, ncol, full_path);
@@ -154,24 +188,28 @@ bool invert_test_mat_from_file(const char* dir, const char* fname, bool test_par
 
     /* Open the file */
     FILE *fp = fopen(full_path, "r");
-    if (!fp) {
-	perror("Error opening file");
-	print_working_dir();
-	return false;
+    if (!fp)
+    {
+        perror("Error opening file");
+        print_working_dir();
+        return false;
     }
 
     /* Scan the file and read the matrix */
     int i, j;
     double mat[nrow][ncol];
 
-    for (i = 0; i < nrow; ++i) {
-	for (j = 0; j < ncol; ++j) {
-	    if (fscanf(fp, "%lf", &mat[i][j]) != 1) {
-		printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
-		fclose(fp);
-		return false;
-	    }
-	}
+    for (i = 0; i < nrow; ++i)
+    {
+        for (j = 0; j < ncol; ++j)
+        {
+            if (fscanf(fp, "%lf", &mat[i][j]) != 1)
+            {
+                printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
+                fclose(fp);
+                return false;
+            }
+        }
     }
 
     fclose(fp);
@@ -186,31 +224,37 @@ bool invert_test_mat_from_file(const char* dir, const char* fname, bool test_par
     bool res;
     if (test_parallel)
     {
-	res = invert_matrix_par(nrow, ncol, mat_cp, mat_inv);
+        res = invert_matrix_par(nrow, ncol, mat_cp, mat_inv);
     }
     else
     {
-	res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
+        res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
     }
 
+    if (res && kind == 'i')
+    {
 
-    if (res && kind == 'i') {
-
-	printf("Found inverse:\n");
+        printf("Found inverse:\n");
         print_mat(nrow, ncol, mat_inv);
 
-	if (check_inverse(nrow, ncol, mat, mat_inv)) {
-	    printf("Found correct inverse\n");
-	} else {
-	    printf("ERROR: Didn't find inverse for invertible matrix\n");
-	}
-    } else if (!res && kind == 'i') {
-	printf("ERROR: Failed to invert invertible matrix\n");
-    } else if (!res && kind == 's') {
-	printf("Matrix is singular\n");
+        if (check_inverse(nrow, ncol, mat, mat_inv))
+        {
+            printf("Found correct inverse\n");
+        }
+        else
+        {
+            printf("ERROR: Didn't find inverse for invertible matrix\n");
+        }
+    }
+    else if (!res && kind == 'i')
+    {
+        printf("ERROR: Failed to invert invertible matrix\n");
+    }
+    else if (!res && kind == 's')
+    {
+        printf("Matrix is singular\n");
     }
 
     printf("---------------------\n\n");
     return true;
 }
-

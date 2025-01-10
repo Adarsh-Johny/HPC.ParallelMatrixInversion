@@ -8,15 +8,15 @@
 // Configuration for number of matrices for each size
 // Format: { {matrix_size, count}, ... }
 int matrix_config[][2] = {
-    {2, 1},
-    {3, 1},
-    {4, 1},
     {5, 1},
-    {6, 1},
-    {7, 1},
     {8, 1},
-    {9, 1},
-    {10, 1}};
+    {10, 1},
+    {11, 1},
+    {12, 1},
+    {13, 1},
+    {14, 1},
+    {15, 1}};
+
 int config_size = sizeof(matrix_config) / sizeof(matrix_config[0]);
 
 // Function to calculate the determinant of a matrix (recursive for general case)
@@ -67,7 +67,7 @@ double determinant(double **matrix, int n)
 // Function to save the matrix to a file
 void save_matrix_to_file(double **matrix, int size, int index)
 {
-    char folder_name[] = "../test_matrices";
+    char folder_name[] = "../performance_test_matrices";
     mkdir(folder_name, 0777); // Create the folder if it doesn't exist
 
     char file_name[100];
@@ -104,8 +104,16 @@ void generate_invertible_matrix(int size, int min_value, int max_value, int num_
 
     for (int idx = 1; idx <= num_matrices; idx++)
     {
+        int retries = 0;
         while (1)
         {
+            retries++;
+            if (retries > 1000)
+            {
+                fprintf(stderr, "Failed to generate an invertible matrix of size %d after 1000 attempts.\n", size);
+                return;
+            }
+
             // Fill the matrix with random values
             for (int i = 0; i < size; i++)
             {
@@ -115,8 +123,10 @@ void generate_invertible_matrix(int size, int min_value, int max_value, int num_
                 }
             }
 
+            float det = determinant(matrix, size);
+
             // Check if the matrix is invertible
-            if (fabs(determinant(matrix, size)) > 1e-6)
+            if (fabs(det) > 1e-6)
             {
                 break;
             }

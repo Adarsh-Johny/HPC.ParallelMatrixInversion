@@ -14,4 +14,7 @@ void multiply_row(int row_idx, double n, int nrow, int ncol, double mat[nrow][nc
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]);
 
+/* Function for benchmarking */
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol]);
+
 #endif
