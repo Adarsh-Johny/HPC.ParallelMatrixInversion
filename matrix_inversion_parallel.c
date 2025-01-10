@@ -1,5 +1,5 @@
 #include "matrix_inversion_parallel.h"
-#include "common.h"
+#include "helpers/common.h"
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
