@@ -8,10 +8,53 @@
 #include <math.h>    /* fabs */
 #include <stdbool.h> /* bool */
 
+#include <dirent.h> /* DIR, readdir */
+#include <sys/types.h> /* struct stat */
+#include <sys/stat.h> /* stat, IS_REG */
+/* #include <unistd.h> */
+
 /* Helper function declarations */
 double **allocate_and_read_matrix(const char *dir, const char *fname, int *nrow, int *ncol);
 void process_serial_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result);
 void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result);
+bool invert_matrix_from_file(const char *dir, const char *fname);
+
+int main(int argc, char *argv[]) {
+
+    const char *directory_path = "HPC.ParallelMatrixInversion/performance_test_matrices/";
+    struct dirent *entry;
+    DIR *dir = opendir(directory_path);
+
+    if (!dir)
+    {
+	perror("opendir");
+	return 1;
+    }
+
+    printf("Opened dir %s\n", directory_path);
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+	/* Construct the full path to the file */
+	char full_path[1024];
+	snprintf(full_path, sizeof(full_path), "%s/%s", directory_path, entry->d_name);
+
+	/* Use stat() to check if it's a regular file */
+	struct stat file_stat;
+	if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
+	{
+	    if (!invert_matrix_from_file(directory_path, entry->d_name))
+	    {
+		printf("Failed to invert matrix from %s\n", full_path);
+	    }
+	}
+    }
+
+    closedir(dir);
+
+    return 0;
+
+}
 
 bool invert_matrix_from_file(const char *dir, const char *fname)
 {
