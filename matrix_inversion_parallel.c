@@ -41,9 +41,9 @@ bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_in
 void extract_inverse_par(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
 {
 	int i, j;
-#pragma omp parallel for
 	for (i = 0; i < nrow; i++)
 	{
+		#pragma omp parallel for
 		for (j = 0; j < ncol; j++)
 		{
 			/* Copy only the right side of the augmented matrix */
@@ -88,7 +88,7 @@ bool gaussian_elimination_par(int nrow, int ncol, double mat[nrow][ncol])
 
 		/* Eliminate nonzero values below: parallelize at row and column level */
 		int r;
-#pragma omp parallel for
+
 		for (r = i + 1; r < nrow; r++)
 		{
 			double coeff = mat[r][i];
@@ -120,9 +120,10 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 {
 	int row, col;
 
-#pragma omp parallel for
+	/* #pragma omp parallel for */
 	for (row = 0; row < n; row++)
 	{
+		#pragma omp parallel for
 		for (col = 0; col < n; col++)
 		{
 			/* Copy the row of original matrix */
@@ -137,12 +138,13 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
 {
 	int i;
-#pragma omp parallel for
+	#pragma omp parallel for
 	for (i = 0; i < ncol; i++)
 	{
 		mat[target_idx][i] -= mat[row_idx][i] * coeff;
 	}
 }
+
 
 /* Multiply row elements by s */
 void multiply_row_par(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol])
