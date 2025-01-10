@@ -10,6 +10,6 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n]);
 void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
 void multiply_row_par(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]);
 
-void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol]);
+void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][ncol]);
 
 #endif

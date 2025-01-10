@@ -14,7 +14,7 @@
 #include <sys/time.h> /* gettimeofday */
 
 /* Function for benchmarking */
-void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
+void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][ncol])
 {
 	struct timeval start, end;
 	double mat_inv[nrow][ncol];
