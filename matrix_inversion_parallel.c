@@ -120,7 +120,6 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 {
 	int row, col;
 
-	/* #pragma omp parallel for */
 	for (row = 0; row < n; row++)
 	{
 		#pragma omp parallel for
