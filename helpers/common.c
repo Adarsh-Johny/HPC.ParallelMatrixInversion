@@ -118,6 +118,9 @@ bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][nc
         }
     }
 
+    printf("####check_inverse: original matrix and its inverse multiplication:\n");
+    print_mat(nrow, ncol, mat_res);
+
     return success;
 }
 
