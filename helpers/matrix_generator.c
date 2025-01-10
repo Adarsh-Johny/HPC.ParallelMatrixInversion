@@ -67,7 +67,7 @@ double determinant(double **matrix, int n)
 // Function to save the matrix to a file
 void save_matrix_to_file(double **matrix, int size, int index)
 {
-    char folder_name[] = "./test_matrices";
+    char folder_name[] = "../test_matrices";
     mkdir(folder_name, 0777); // Create the folder if it doesn't exist
 
     char file_name[100];
@@ -144,6 +144,5 @@ int main()
         int count = matrix_config[i][1];
         generate_invertible_matrix(size, 0, 100, count);
     }
-
     return 0;
 }
