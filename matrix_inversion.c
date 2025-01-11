@@ -7,84 +7,24 @@
 #include <sys/time.h> /* gettimeofday */
 #include <math.h>     /* fabs */
 
-bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
-{
-    int n = nrow;
+#define EPSILON 1e-9
+#define DEBUG 1
+#if DEBUG
+#define DBG_PRINT(...) printf(__VA_ARGS__)
+#else
+#define DBG_PRINT(...)
+#endif
 
-    /* Augment identity */
-    double mat_aug[n][2 * ncol];
-    augment_mat(n, mat, mat_aug);
+#include <sys/time.h> /* gettimeofday */
 
-    /* Forward elimination */
-    bool res = gaussian_elimination(n, 2 * n, mat_aug);
-    if (res)
-    {
-        printf("GE successsful\n");
-    }
-    else
-    {
-        printf("GE failed\n");
-        return false;
-    }
-
-    /*
-    printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
-    print_mat(n, 2 * n, mat_aug);
-    */
-
-    /* Backward elimination */
-    bool res2 = rref(n, 2 * n, mat_aug);
-    if (res2)
-    {
-        printf("RREF successful\n");
-    }
-    else
-    {
-        printf("RREF failed\n");
-        return false;
-    }
-
-    /*
-    printf("Matrix after RREF\n");
-    print_mat(n, 2 * n, mat_aug);
-    */
-    printf("+++++++++++++++FROM Matrix Inverse FN+++++--mat_aug--++++++++++++++++\n");
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < 2 * n; j++)
-        {
-            printf("%8.2f ", mat_aug[i][j]);
-        }
-        printf("\n");
-    }
-
-    /* Extract inverse if the steps before were successful */
-    extract_inverse(n, 2 * n, mat_aug, mat_inv);
-
-    printf("+++++++++++++++FROM Matrix Inverse --extract_inverse --mat_inv--+++++++++++++++++++++\n");
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            printf("%8.2f ", mat_inv[i][j]);
-        }
-        printf("\n");
-    }
-
-    return true;
-}
-
-void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
     struct timeval start, end;
-    double mat_inv[nrow][ncol];
 
     /* Start timing */
     gettimeofday(&start, NULL);
 
-    /* Call existing invert_matrix function */
+    /* Call the matrix inversion function */
     if (!invert_matrix(nrow, ncol, mat, mat_inv))
     {
         printf("Matrix inversion failed during benchmarking.\n");
@@ -101,58 +41,90 @@ void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
     printf("Matrix inversion (Serial) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
 }
 
-/* Existing functions (no changes) */
-
-void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
+bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
-    int i, j;
-
-    for (i = 0; i < nrow; i++)
+    if (nrow != ncol)
     {
-        for (j = 0; j < ncol; j++)
-        {
-            mat_inv[i][j] = mat_aug[i][nrow + j];
-        }
+        printf("Matrix inversion only supported for square matrices.\n");
+        return false;
     }
-}
 
-/* Second part of the Gauss-Jordan elimination, results in the reduced row echelon form */
-bool rref(int nrow, int ncol, double mat[nrow][ncol])
-{
-    int i;
-    /* printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol); */
-    /* print_mat(nrow, ncol, mat); */
+    int n = nrow;
 
-    for (i = nrow - 1; i > 0; i--)
+    /* Augment identity */
+    double mat_aug[n][2 * n];
+    augment_mat_ser(n, mat, mat_aug);
+
+    /* Forward elimination */
+    if (!gaussian_elimination(n, 2 * n, mat_aug))
     {
-        /* printf("GE: Eliminating the rows above %d\n", i); */
-        int r;
-        for (r = i - 1; r >= 0; r--)
-        {
-            /* printf("GE: Eliminating row %d\n", r); */
-            double coeff = mat[r][i];
-            subtract_row(i, r, coeff, nrow, ncol, mat);
-        }
+        printf("Gaussian elimination failed.\n");
+        return false;
     }
+    // DBG_PRINT("Matrix after Gaussian elimination:\n");
+    // print_mat(n, 2 * n, mat_aug);
+
+    /* Backward elimination */
+    if (!rref(n, 2 * n, mat_aug))
+    {
+        printf("RREF failed.\n");
+        return false;
+    }
+    // DBG_PRINT("Matrix after RREF:\n");
+    // print_mat(n, 2 * n, mat_aug);
+
+    /* Extract inverse */
+    extract_inverse_ser(n, 2 * n, mat_aug, mat_inv);
+
+    // DBG_PRINT("Extracted Inverse Matrix:\n");
+    // for (int i = 0; i < n; i++)
+    // {
+    //     for (int j = 0; j < n; j++)
+    //     {
+    //         printf("%8.9f ", mat_inv[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
     return true;
 }
 
-/* Normalize pivots and clear nonzero values below diagonal */
+void multiply_row_ser(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol])
+{
+    if (row_idx < 0 || row_idx >= nrow)
+    {
+        printf("Error: Invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
+        return;
+    }
+
+    for (int j = 0; j < ncol; j++)
+    {
+        mat[row_idx][j] *= s;
+    }
+}
+
+void augment_mat_ser(int n, const double mat[n][n], double mat_aug[n][2 * n])
+{
+    for (int row = 0; row < n; row++)
+    {
+        for (int col = 0; col < n; col++)
+        {
+            mat_aug[row][col] = mat[row][col];
+            mat_aug[row][n + col] = (row == col) ? 1 : 0;
+        }
+    }
+}
+
 bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol])
 {
-    int i, r;
-
-    /* Iterate the rows of mat */
-    for (i = 0; i < nrow; i++)
+    for (int i = 0; i < nrow; i++)
     {
-        if (fabs(mat[i][i]) < 1e-9)
+        if (fabs(mat[i][i]) < EPSILON)
         {
-
-            /* Find row below the current row where the current column index is nonzero */
             bool found = false;
-            for (r = i + 1; r < nrow; r++)
+            for (int r = i + 1; r < nrow; r++)
             {
-                if (fabs(mat[r][i]) > 1e-9)
+                if (fabs(mat[r][i]) > EPSILON)
                 {
                     swap_rows(i, r, nrow, ncol, mat);
                     found = true;
@@ -161,79 +133,63 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol])
             }
             if (!found)
             {
-                printf("Matrix is singular or nearly singular\n");
+                printf("Matrix is singular at row %d, column %d\n", i, i);
                 return false;
             }
         }
 
-        /* Normalize the row */
-        double s = 1 / mat[i][i];
-        multiply_row(i, s, nrow, ncol, mat);
+        double s = 1.0 / mat[i][i];
+        multiply_row_ser(i, s, nrow, ncol, mat);
 
-        /* Eliminate nonzero values below */
-        int r;
-        for (r = i + 1; r < nrow; r++)
+        for (int r = i + 1; r < nrow; r++)
         {
             double coeff = mat[r][i];
-            subtract_row(i, r, coeff, nrow, ncol, mat);
+            subtract_row_ser(i, r, coeff, nrow, ncol, mat);
         }
     }
-
     return true;
 }
 
-/* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
-void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
+void subtract_row_ser(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
 {
-    /* TODO: debug printing */
-
     if (row_idx < 0 || row_idx >= nrow)
     {
-        printf("Subtract row: invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
+        printf("Error: Invalid source row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
+        return;
     }
 
     if (target_idx < 0 || target_idx >= nrow)
     {
-        printf("Subtract row: invalid target row index %d for matrix %d x %d\n", target_idx, nrow, ncol);
-    }
-
-    int i;
-    for (i = 0; i < ncol; i++)
-    {
-        mat[target_idx][i] -= mat[row_idx][i] * coeff;
-    }
-}
-
-void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol])
-{
-    /* TODO: remove later, random debugging */
-    if (row_idx < 0 || row_idx >= nrow)
-    {
-        printf("Multiply row: invalid row index %d for matrix %d x %d", row_idx, nrow, ncol);
+        printf("Error: Invalid target row index %d for matrix %d x %d\n", target_idx, nrow, ncol);
         return;
     }
 
-    int j;
-    for (j = 0; j < ncol; j++)
+    for (int j = 0; j < ncol; j++)
     {
-        mat[row_idx][j] *= s;
+        mat[target_idx][j] -= coeff * mat[row_idx][j];
     }
 }
 
-/* This surely can be parallelized */
-void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n])
+bool rref(int nrow, int ncol, double mat[nrow][ncol])
 {
-    int row, col;
-
-    /* Parallelize the copying of the rows */
-    for (row = 0; row < n; row++)
+    for (int i = nrow - 1; i > 0; i--)
     {
-        for (col = 0; col < n; col++)
+        for (int r = i - 1; r >= 0; r--)
         {
-            /* Copy the row of original matrix */
-            mat_aug[row][col] = mat[row][col];
-            /* Create a row of identity matrix to the right */
-            mat_aug[row][n + col] = (row == col) ? 1 : 0;
+            double coeff = mat[r][i];
+            subtract_row_ser(i, r, coeff, nrow, ncol, mat);
+        }
+    }
+    return true;
+}
+
+void extract_inverse_ser(int nrow, int ncol, const double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
+{
+    for (int i = 0; i < nrow; i++)
+    {
+        for (int j = 0; j < nrow; j++)
+        {
+            mat_inv[i][j] = mat_aug[i][nrow + j];
         }
     }
 }
