@@ -37,7 +37,7 @@ bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *n
     int index;
     if (sscanf(fname, "matrix_%dx%d_%02d.txt", nrow, ncol, &index) != 3)
     {
-        printf("Invalid filename format: %s\n", fname);
+        printf("Skipping invalid filename: %s\n", fname);
         free(full_path);
         return false;
     }
