@@ -65,12 +65,13 @@ bool invert_matrix_from_file(const char *dir, const char *fname)
     double mat_inv_parallel[nrow][ncol];
     bool parallel_result = false;
 
-    process_parallel_inversion(nrow, ncol, mat, mat_inv_parallel, &parallel_result);
+    // process_parallel_inversion(nrow, ncol, mat, mat_inv_parallel, &parallel_result);
+    process_serial_inversion(nrow, ncol, mat, mat_inv_parallel, &parallel_result);
 
     // if (parallel_result)
     // {
-    //     printf("\n********** Inverted Matrix (Parallel) **********\n");
-    //     print_mat(nrow, ncol, mat_inv_parallel);
+    // printf("\n********** Inverted Matrix (Parallel) **********\n");
+    // print_mat(nrow, ncol, mat_inv_parallel);
     // }
     // else
     // {
@@ -101,5 +102,16 @@ void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv
 
     // Benchmark and invert matrix
     benchmark_matrix_inversion_parallel(nrow, ncol, mat_cp, mat_inv);
+    // *result = invert_matrix_par(nrow, ncol, mat_cp, mat_inv);
+}
+
+/* Process parallel matrix inversion */
+void process_serial_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result)
+{
+    double mat_cp[nrow][ncol];
+    copy_matrix(nrow, ncol, mat, mat_cp);
+
+    // Benchmark and invert matrix
+    benchmark_matrix_inversion(nrow, ncol, mat_cp, mat_inv);
     // *result = invert_matrix_par(nrow, ncol, mat_cp, mat_inv);
 }
