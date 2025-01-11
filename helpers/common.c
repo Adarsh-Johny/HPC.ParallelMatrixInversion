@@ -37,13 +37,11 @@ void print_working_dir()
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol])
 {
-    int i, j;
-
-    for (i = 0; i < nrow; i++)
+    for (int i = 0; i < nrow; i++)
     {
-        for (j = 0; j < ncol; j++)
+        for (int j = 0; j < ncol; j++)
         {
-            printf("%.2f \t", mat[i][j]);
+            printf("%8.12f ", mat[i][j]);
         }
         printf("\n");
     }
@@ -87,13 +85,20 @@ bool compare_matrices(int nrow, int ncol, double mat1[nrow][ncol], double mat2[n
     }
     return true;
 }
-
 bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol])
 {
+    if (nrow != ncol)
+    {
+        printf("Error: Matrices must be square to check for inverses.\n");
+        return false;
+    }
+
     bool success = true;
     double mat_res[nrow][ncol];
+    double tolerance = 1e-9;
     int i, j, k;
 
+    // Initialize mat_res to zero and compute the product of m1 and m2
     for (i = 0; i < nrow; i++)
     {
         for (j = 0; j < ncol; j++)
@@ -105,14 +110,15 @@ bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][nc
                 mat_res[i][j] += m1[i][k] * m2[k][j];
             }
 
-            /* Check if the result is identity (will fail if there are nans or +-inf) */
-            if (i == j && fabs(1 - mat_res[i][j]) > 1e-9)
+            // Check identity matrix conditions
+            if (i == j && fabs(1.0 - mat_res[i][j]) > tolerance)
             {
+                printf("Diagonal element at (%d, %d) is not 1. Value: %f\n", i, j, mat_res[i][j]);
                 success = false;
             }
-
-            if (i != j && fabs(mat_res[i][j]) > 1e-9)
+            else if (i != j && fabs(mat_res[i][j]) > tolerance)
             {
+                printf("Off-diagonal element at (%d, %d) is not 0. Value: %f\n", i, j, mat_res[i][j]);
                 success = false;
             }
         }
@@ -144,4 +150,3 @@ void free_matrix(double **mat, int nrow)
     }
     free(mat);
 }
-

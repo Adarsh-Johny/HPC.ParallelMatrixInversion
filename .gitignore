@@ -53,3 +53,4 @@ dkms.conf
 
 # Generated output files
 *.sh.*
+mpich-3.2/*
