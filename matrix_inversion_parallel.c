@@ -42,7 +42,7 @@ void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][nc
 
 	printf("Matrix inversion (Parallel) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
 	printf("Inverted Matrix:\n");
-	// print_mat(nrow, ncol, mat_inv);
+	print_mat(nrow, ncol, mat_inv);
 }
 
 bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
