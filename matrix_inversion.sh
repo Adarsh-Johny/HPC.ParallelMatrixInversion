@@ -7,5 +7,4 @@
 module load openmpi-4.0.4
 
 # Actual running command
-./HPC.ParallelMatrixInversion/matrix_inversion
-
+mpiexec ./HPC.ParallelMatrixInversion/main_program

@@ -48,9 +48,30 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     printf("Matrix after RREF\n");
     print_mat(n, 2 * n, mat_aug);
     */
+    printf("+++++++++++++++FROM Matrix Inverse FN+++++--mat_aug--++++++++++++++++\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < 2 * n; j++)
+        {
+            printf("%8.2f ", mat_aug[i][j]);
+        }
+        printf("\n");
+    }
 
     /* Extract inverse if the steps before were successful */
     extract_inverse(n, 2 * n, mat_aug, mat_inv);
+
+    printf("+++++++++++++++FROM Matrix Inverse --extract_inverse --mat_inv--+++++++++++++++++++++\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            printf("%8.2f ", mat_inv[i][j]);
+        }
+        printf("\n");
+    }
 
     return true;
 }
