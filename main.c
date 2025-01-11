@@ -14,6 +14,7 @@
 double **allocate_and_read_matrix(const char *dir, const char *fname, int *nrow, int *ncol);
 void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result);
 bool invert_matrix_from_file(const char *dir, const char *fname);
+void process_serial_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol], bool *result);
 
 /* Main function to perform matrix inversion */
 int main(int argc, char *argv[])
@@ -32,11 +33,17 @@ int main(int argc, char *argv[])
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL)
     {
-        // Construct the full path to the file
+        if (entry->d_name[0] == '.') // Skip hidden files and "." or ".."
+            continue;
+
+        // Check if the file matches the expected format
+        if (strstr(entry->d_name, "matrix_") == NULL)
+            continue;
+
+        // Construct the full path and process
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", directory_path, entry->d_name);
 
-        // Check if it's a regular file
         struct stat file_stat;
         if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode))
         {
@@ -51,6 +58,8 @@ int main(int argc, char *argv[])
 /* Function to read and invert a matrix from a file */
 bool invert_matrix_from_file(const char *dir, const char *fname)
 {
+    fprintf("Called file: %s", *fname);
+
     int nrow, ncol;
     double **mat = allocate_and_read_matrix(dir, fname, &nrow, &ncol);
 
@@ -63,12 +72,12 @@ bool invert_matrix_from_file(const char *dir, const char *fname)
     // print_mat(nrow, ncol, mat);
 
     double mat_inv_parallel[nrow][ncol];
-    bool parallel_result = false;
+    bool result = false;
 
-    // process_parallel_inversion(nrow, ncol, mat, mat_inv_parallel, &parallel_result);
-    process_serial_inversion(nrow, ncol, mat, mat_inv_parallel, &parallel_result);
+    process_parallel_inversion(nrow, ncol, mat, mat_inv_parallel, &result);
+    // process_serial_inversion(nrow, ncol, mat, mat_inv_parallel, &result);
 
-    // if (parallel_result)
+    // if (result)
     // {
     // printf("\n********** Inverted Matrix (Parallel) **********\n");
     // print_mat(nrow, ncol, mat_inv_parallel);
