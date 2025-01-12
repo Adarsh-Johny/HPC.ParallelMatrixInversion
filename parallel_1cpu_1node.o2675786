@@ -1,0 +1,79 @@
+Opened directory: HPC.ParallelMatrixInversion/performance_test_matrices/
+Reading matrix from file matrix_10x10_01.txt
+Reading 10x10 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_10x10_01.txt
+Matrix inversion (Serial) completed in 0.009 ms for 10x10 matrix.
+Reading matrix from file matrix_5x5_01.txt
+Reading 5x5 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_5x5_01.txt
+Matrix inversion (Serial) completed in 0.001 ms for 5x5 matrix.
+Reading matrix from file matrix_8x8_01.txt
+Reading 8x8 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_8x8_01.txt
+Matrix inversion (Serial) completed in 0.006 ms for 8x8 matrix.
+Reading matrix from file matrix_1000x1000_01.txt
+Reading 1000x1000 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_1000x1000_01.txt
+Matrix inversion (Serial) completed in 96116.782 ms for 1000x1000 matrix.
+Reading matrix from file matrix_100x100_01.txt
+Reading 100x100 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_100x100_01.txt
+Matrix inversion (Serial) completed in 42.864 ms for 100x100 matrix.
+Reading matrix from file matrix_11x11_01.txt
+Reading 11x11 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_11x11_01.txt
+Matrix inversion (Serial) completed in 0.011 ms for 11x11 matrix.
+Reading matrix from file matrix_12x12_01.txt
+Reading 12x12 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_12x12_01.txt
+Matrix inversion (Serial) completed in 0.015 ms for 12x12 matrix.
+Reading matrix from file matrix_13x13_01.txt
+Reading 13x13 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_13x13_01.txt
+Matrix inversion (Serial) completed in 0.018 ms for 13x13 matrix.
+Reading matrix from file matrix_14x14_01.txt
+Reading 14x14 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_14x14_01.txt
+Matrix inversion (Serial) completed in 0.021 ms for 14x14 matrix.
+Reading matrix from file matrix_15x15_01.txt
+Reading 15x15 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_15x15_01.txt
+Matrix inversion (Serial) completed in 0.026 ms for 15x15 matrix.
+Reading matrix from file matrix_200x200_01.txt
+Reading 200x200 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_200x200_01.txt
+Matrix inversion (Serial) completed in 448.276 ms for 200x200 matrix.
+Reading matrix from file matrix_20x20_01.txt
+Reading 20x20 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_20x20_01.txt
+Matrix inversion (Serial) completed in 0.058 ms for 20x20 matrix.
+Reading matrix from file matrix_300x300_01.txt
+Reading 300x300 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_300x300_01.txt
+Matrix inversion (Serial) completed in 2412.489 ms for 300x300 matrix.
+Reading matrix from file matrix_30x30_01.txt
+Reading 30x30 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_30x30_01.txt
+Matrix inversion (Serial) completed in 0.191 ms for 30x30 matrix.
+Reading matrix from file matrix_400x400_01.txt
+Reading 400x400 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_400x400_01.txt
+Matrix inversion (Serial) completed in 7107.979 ms for 400x400 matrix.
+Reading matrix from file matrix_40x40_01.txt
+Reading 40x40 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_40x40_01.txt
+Matrix inversion (Serial) completed in 0.455 ms for 40x40 matrix.
+Reading matrix from file matrix_500x500_01.txt
+Reading 500x500 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_500x500_01.txt
+Matrix inversion (Serial) completed in 12946.399 ms for 500x500 matrix.
+Reading matrix from file matrix_50x50_01.txt
+Reading 50x50 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_50x50_01.txt
+Matrix inversion (Serial) completed in 0.896 ms for 50x50 matrix.
+Reading matrix from file matrix_600x600_01.txt
+Reading 600x600 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_600x600_01.txt
+Matrix inversion (Serial) completed in 27093.632 ms for 600x600 matrix.
+Reading matrix from file matrix_60x60_01.txt
+Reading 60x60 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_60x60_01.txt
+Matrix inversion (Serial) completed in 1.525 ms for 60x60 matrix.
+Reading matrix from file matrix_700x700_01.txt
+Reading 700x700 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_700x700_01.txt
+Matrix inversion (Serial) completed in 38413.404 ms for 700x700 matrix.
+Reading matrix from file matrix_70x70_01.txt
+Reading 70x70 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_70x70_01.txt
+Matrix inversion (Serial) completed in 2.379 ms for 70x70 matrix.
+Reading matrix from file matrix_800x800_01.txt
+Reading 800x800 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_800x800_01.txt
+Matrix inversion (Serial) completed in 70485.048 ms for 800x800 matrix.
+Reading matrix from file matrix_80x80_01.txt
+Reading 80x80 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_80x80_01.txt
+Matrix inversion (Serial) completed in 95.558 ms for 80x80 matrix.
+Reading matrix from file matrix_900x900_01.txt
+Reading 900x900 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_900x900_01.txt
+Matrix inversion (Serial) completed in 86035.534 ms for 900x900 matrix.
+Reading matrix from file matrix_90x90_01.txt
+Reading 90x90 matrix from HPC.ParallelMatrixInversion/performance_test_matrices//matrix_90x90_01.txt
+Matrix inversion (Serial) completed in 99.004 ms for 90x90 matrix.
