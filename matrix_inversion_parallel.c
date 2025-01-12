@@ -41,8 +41,8 @@ void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][nc
 	elapsed_time += (end.tv_usec - start.tv_usec) / 1000.0;
 
 	printf("Matrix inversion (Parallel) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
-	printf("Inverted Matrix:\n");
-	print_mat(nrow, ncol, mat_inv);
+	// printf("Inverted Matrix:\n");
+	// print_mat(nrow, ncol, mat_inv);
 }
 
 bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
@@ -79,11 +79,11 @@ void extract_inverse_par(int nrow, int ncol, double mat_aug[nrow][ncol], double 
 		}
 	}
 }
-
 bool gaussian_elimination_par(int nrow, int ncol, double mat[nrow][ncol])
 {
 	for (int i = 0; i < nrow; i++)
 	{
+		// Ensure the pivot element is non-zero
 		if (fabs(mat[i][i]) < 1e-9)
 		{
 			bool swapped = false;
@@ -103,12 +103,15 @@ bool gaussian_elimination_par(int nrow, int ncol, double mat[nrow][ncol])
 			}
 		}
 
+		// Normalize the pivot row
 		double scale = 1.0 / mat[i][i];
 		multiply_row_par(i, scale, nrow, ncol, mat);
 
-#pragma omp parallel for
+// Eliminate rows below the pivot
+#pragma omp parallel for schedule(dynamic)
 		for (int r = i + 1; r < nrow; r++)
 		{
+			// printf("Thread: gaussian_elimination_par %d/%d - %d\n", omp_get_max_threads(), omp_get_thread_num(), omp_get_num_procs());
 			double coeff = mat[r][i];
 			subtract_row_par(i, r, coeff, nrow, ncol, mat);
 		}
@@ -123,6 +126,8 @@ bool rref_par(int nrow, int ncol, double mat[nrow][ncol])
 #pragma omp parallel for
 		for (int r = i - 1; r >= 0; r--)
 		{
+			// printf("Thread rref_par: %d/%d - %d\n", omp_get_max_threads(), omp_get_thread_num(), omp_get_num_procs());
+
 			double coeff = mat[r][i];
 			subtract_row_par(i, r, coeff, nrow, ncol, mat);
 		}

@@ -13,6 +13,6 @@
  *
  * Returns true on success, false on failure.
  */
-bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *ncol, double ***mat);
+bool read_matrix_from_file(const char *filepath, int *nrow, int *ncol, double ***mat);
 
 #endif /* FILE_READER_H */
