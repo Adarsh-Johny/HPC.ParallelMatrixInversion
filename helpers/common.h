@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdbool.h>
+
 void copy_mat(int nrow, int ncol, double src[nrow][ncol], double dest[nrow][ncol]);
 
 void print_mat(int nrow, int ncol, double mat[nrow][ncol]);

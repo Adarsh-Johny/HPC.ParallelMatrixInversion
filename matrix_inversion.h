@@ -15,6 +15,6 @@ void multiply_row_ser(int row_idx, double n, int nrow, int ncol, double mat[nrow
 void subtract_row_ser(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]);
 
 /* Function for benchmarking */
-void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol]);
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]);
 
 #endif

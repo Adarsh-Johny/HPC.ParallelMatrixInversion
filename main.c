@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* Helper function declarations */
 double **allocate_and_read_matrix(const char *filepath, int *nrow, int *ncol);
 void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol]);
 bool invert_matrix_from_file(const char *filepath);
@@ -25,14 +24,8 @@ bool invert_matrix_from_file(const char *filepath);
 //     }
 // }
 
-/* Main function to perform matrix inversion */
 int main(int argc, char *argv[])
 {
-
-    // printf("Testing OpenMP\n");
-    // test_openmp();
-    // return 0;
-
     printf("\n********** Matrix Inverse **********\n\n");
 
     if (argc < 2)

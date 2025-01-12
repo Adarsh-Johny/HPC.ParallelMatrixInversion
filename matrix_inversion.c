@@ -17,11 +17,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 
     /* Forward elimination */
     bool res = gaussian_elimination(n, 2 * n, mat_aug);
-    if (res)
-    {
-        printf("GE successsful\n");
-    }
-    else
+    if (!res)
     {
         printf("GE failed\n");
         return false;
@@ -34,11 +30,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 
     /* Backward elimination */
     bool res2 = rref(n, 2 * n, mat_aug);
-    if (res2)
-    {
-        printf("RREF successful\n");
-    }
-    else
+    if (!res2)
     {
         printf("RREF failed\n");
         return false;
@@ -48,38 +40,37 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     printf("Matrix after RREF\n");
     print_mat(n, 2 * n, mat_aug);
     */
-    printf("+++++++++++++++FROM Matrix Inverse FN+++++--mat_aug--++++++++++++++++\n");
+    // printf("+++++++++++++++FROM Matrix Inverse FN+++++--mat_aug--++++++++++++++++\n");
 
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < 2 * n; j++)
-        {
-            printf("%8.2f ", mat_aug[i][j]);
-        }
-        printf("\n");
-    }
+    // for (int i = 0; i < n; i++)
+    // {
+    //     for (int j = 0; j < 2 * n; j++)
+    //     {
+    //         printf("%8.9f ", mat_aug[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     /* Extract inverse if the steps before were successful */
     extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
-    printf("+++++++++++++++FROM Matrix Inverse --extract_inverse --mat_inv--+++++++++++++++++++++\n");
+    // printf("+++++++++++++++FROM Matrix Inverse --extract_inverse --mat_inv--+++++++++++++++++++++\n");
 
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            printf("%8.2f ", mat_inv[i][j]);
-        }
-        printf("\n");
-    }
+    // for (int i = 0; i < n; i++)
+    // {
+    //     for (int j = 0; j < n; j++)
+    //     {
+    //         printf("%8.2f ", mat_inv[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     return true;
 }
 
-void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol])
+void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
     struct timeval start, end;
-    double mat_inv[nrow][ncol];
 
     /* Start timing */
     gettimeofday(&start, NULL);

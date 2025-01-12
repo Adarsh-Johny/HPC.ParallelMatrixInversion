@@ -1,13 +1,13 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=300:mem=2gb
-#PBS -l walltime=2:00:00
+#PBS -l select=1:ncpus=16:mem=2gb
+#PBS -l walltime=0:05:00
 #PBS -q short_cpuQ
 
 # Load the module
 module load openmpi-4.0.4
 
 # Set the number of OpenMP threads
-# export OMP_NUM_THREADS=8
+# export OMP_NUM_THREADS=4
 
 export OMP_DISPLAY_ENV=TRUE
 

@@ -35,6 +35,18 @@ void print_working_dir()
     }
 }
 
+void print_mat_pointer(int nrow, int ncol, double **mat)
+{
+    for (int i = 0; i < nrow; i++)
+    {
+        for (int j = 0; j < ncol; j++)
+        {
+            printf("%8.12f ", mat[i][j]); // Use the pointer syntax to access elements
+        }
+        printf("\n");
+    }
+}
+
 void print_mat(int nrow, int ncol, double mat[nrow][ncol])
 {
     for (int i = 0; i < nrow; i++)
