@@ -3,6 +3,7 @@
 #include <stdlib.h>  /* malloc, free */
 #include <string.h>  /* strlen, strcpy, strcat */
 #include <stdbool.h> /* bool, true, false */
+#include <stddef.h>
 
 /* Helper function to free the matrix */
 void free_matrix_file_reader(double **mat, int nrow)
@@ -18,38 +19,29 @@ void free_matrix_file_reader(double **mat, int nrow)
 }
 
 /* A method to read a matrix from a file */
-bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *ncol, double ***mat)
+bool read_matrix_from_file(const char *filepath, int *nrow, int *ncol, double ***mat)
 {
-    /* Create the target file path */
-    char *full_path = malloc(strlen(dir) + strlen(fname) + 2); // +2 for '/' and '\0'
-    if (!full_path)
-    {
-        perror("malloc (concatenate file path)");
-        return false;
-    }
-
-    strcpy(full_path, dir);
-    strcat(full_path, "/");
-    strcat(full_path, fname);
-
     /* Extract dimensions from the filename */
-    printf("Reading matrix from file %s\n", fname);
     int index;
+    const char *fname = strrchr(filepath, '/'); // Extract filename from path
+    if (!fname)
+        fname = filepath; // If no '/' found, the entire path is the filename
+    else
+        fname++; // Move past the '/'
+
     if (sscanf(fname, "matrix_%dx%d_%02d.txt", nrow, ncol, &index) != 3)
     {
         printf("Skipping invalid filename: %s\n", fname);
-        free(full_path);
         return false;
     }
 
-    printf("Reading %dx%d matrix from %s\n", *nrow, *ncol, full_path);
+    printf("Reading %dx%d matrix from %s\n", *nrow, *ncol, filepath);
 
     /* Open the file */
-    FILE *fp = fopen(full_path, "r");
+    FILE *fp = fopen(filepath, "r");
     if (!fp)
     {
         perror("Error opening file");
-        free(full_path);
         return false;
     }
 
@@ -59,7 +51,6 @@ bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *n
     {
         perror("malloc (matrix rows)");
         fclose(fp);
-        free(full_path);
         return false;
     }
 
@@ -71,7 +62,6 @@ bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *n
             perror("malloc (matrix columns)");
             free_matrix_file_reader(*mat, i); // Free already allocated rows
             fclose(fp);
-            free(full_path);
             return false;
         }
     }
@@ -83,16 +73,14 @@ bool read_matrix_from_file(const char *dir, const char *fname, int *nrow, int *n
         {
             if (fscanf(fp, "%lf", &(*mat)[i][j]) != 1)
             {
-                printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, fname);
+                printf("Error reading matrix value at [%d][%d] in file: %s\n", i, j, filepath);
                 free_matrix_file_reader(*mat, *nrow);
                 fclose(fp);
-                free(full_path);
                 return false;
             }
         }
     }
 
     fclose(fp);
-    free(full_path);
     return true;
 }
