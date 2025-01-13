@@ -1,3 +1,12 @@
+/*
+ * @file matrix_inverse_mpi.c
+ * @brief Implements a parallel matrix inversion using MPI
+ *
+ * Inverse the given matrix with inverse_matrix_mpi, called from the benchmarking function
+ * benchmark_inversion to measure the performance of the parallel implementation.
+ * Functions expect that the input is a square matrix.
+ */
+
 #include "matrix_inverse_mpi.h"
 #include <mpi.h>
 #include <stdio.h>

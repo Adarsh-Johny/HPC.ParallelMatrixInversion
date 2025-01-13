@@ -1,3 +1,12 @@
+/*
+ * @file matrix_inversion.c
+ * @brief implements serial matrix implementation
+ *
+ * Serial implementation of inverting a matrix using Gaussian elimination.
+ * The benchmark_matrix_inversion is used to benchmark the result.
+ * */
+
+
 #include "matrix_inversion.h"
 #include "helpers/common.h"
 
@@ -191,6 +200,7 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
     }
 }
 
+/* Multiply the row with given row index */
 void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol])
 {
     /* TODO: remove later, random debugging */
@@ -207,6 +217,7 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
     }
 }
 
+/* Add an identity matrix to the right of the input matrix, resulting in an n x 2n matrix */
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n])
 {
     int row, col;

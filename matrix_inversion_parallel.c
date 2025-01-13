@@ -1,3 +1,12 @@
+/**
+ * @file matrix_inversion_parallel.c
+ * @brief Implements parallel matrix inversion using OpenMPI library
+ *
+ * Invert a given square matrix using gaussian elimination and benchmark the result.
+ * The helper functions for augmenting the matrix, multiplying and subtracting 
+ * rows and extracting the inverse are parallelized.
+ * */
+
 #include "matrix_inversion_parallel.h"
 #include "helpers/common.h"
 #include <omp.h>
@@ -6,7 +15,7 @@
 #include <sys/time.h>
 #include <math.h>
 
-/* Function for benchmarking */
+/* Function for benchmarking the inversion */
 void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
 	struct timeval start, end;
@@ -45,6 +54,7 @@ void benchmark_matrix_inversion_parallel(int nrow, int ncol, double mat[nrow][nc
 	// print_mat(nrow, ncol, mat_inv);
 }
 
+/* Invert the matrix and return the inverse */
 bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol])
 {
 	int n = nrow;
@@ -68,6 +78,7 @@ bool invert_matrix_par(int nrow, int ncol, double mat[nrow][ncol], double mat_in
 	return true;
 }
 
+/* Extract the inverse. Input matrix is a n x 2n matrix where the right n x n matrix is the inverse */
 void extract_inverse_par(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
 {
 #pragma omp parallel for collapse(2)
@@ -79,6 +90,10 @@ void extract_inverse_par(int nrow, int ncol, double mat_aug[nrow][ncol], double 
 		}
 	}
 }
+
+/* Implementation of the gaussian elimination step. The left n x n matrix of the input matrix
+ * will be a upper triangular matrix with 1s on the diagonal after this step
+ */
 bool gaussian_elimination_par(int nrow, int ncol, double mat[nrow][ncol])
 {
 	for (int i = 0; i < nrow; i++)
@@ -119,6 +134,7 @@ bool gaussian_elimination_par(int nrow, int ncol, double mat[nrow][ncol])
 	return true;
 }
 
+/* Turn the left n x n matrix of the input matrix into reduced row echelon form. */
 bool rref_par(int nrow, int ncol, double mat[nrow][ncol])
 {
 	for (int i = nrow - 1; i > 0; i--)
@@ -135,6 +151,8 @@ bool rref_par(int nrow, int ncol, double mat[nrow][ncol])
 	return true;
 }
 
+/* Create the augmented n x 2n matrix where the original input matrix is on the left with a
+ * n x n identity matrix added to the right */
 void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 {
 #pragma omp parallel for collapse(2)
@@ -147,6 +165,8 @@ void augment_mat_par(int n, double mat[n][n], double mat_aug[n][2 * n])
 	}
 }
 
+/* Subtract the row corresponding to row_idx from row with target_idx, multiplied with coefficient
+ * coeff. Only the row in target_idx is altered */
 void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
 {
 #pragma omp parallel for
@@ -156,6 +176,7 @@ void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int n
 	}
 }
 
+/* Multiply the row at the given index row_idx with scale scale */
 void multiply_row_par(int row_idx, double scale, int nrow, int ncol, double mat[nrow][ncol])
 {
 #pragma omp parallel for
