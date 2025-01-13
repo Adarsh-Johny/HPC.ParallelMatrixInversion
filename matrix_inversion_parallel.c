@@ -126,7 +126,7 @@ bool rref_par(int nrow, int ncol, double mat[nrow][ncol])
 #pragma omp parallel for
 		for (int r = i - 1; r >= 0; r--)
 		{
-			// printf("Thread rref_par: %d/%d - %d\n", omp_get_max_threads(), omp_get_thread_num(), omp_get_num_procs());
+			// printf("Thread rref_par: %d/%d - %d\n", omp_get_thread_num(),omp_get_max_threads(), omp_get_num_procs());
 
 			double coeff = mat[r][i];
 			subtract_row_par(i, r, coeff, nrow, ncol, mat);

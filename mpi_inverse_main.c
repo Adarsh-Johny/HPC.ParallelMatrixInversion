@@ -11,7 +11,6 @@
 
 #define EPSILON 1e-10
 
-/* Helper function declarations */
 double **allocate_and_read_matrix(const char *filepath, int *nrow, int *ncol);
 bool invert_matrix_from_file(const char *filepath);
 

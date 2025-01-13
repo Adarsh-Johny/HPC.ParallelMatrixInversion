@@ -92,8 +92,6 @@ void benchmark_matrix_inversion(int nrow, int ncol, double mat[nrow][ncol], doub
     printf("Matrix inversion (Serial) completed in %.3f ms for %dx%d matrix.\n", elapsed_time, nrow, ncol);
 }
 
-/* Existing functions (no changes) */
-
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow])
 {
     int i, j;
@@ -176,8 +174,6 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol])
 /* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
 void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol])
 {
-    /* TODO: debug printing */
-
     if (row_idx < 0 || row_idx >= nrow)
     {
         printf("Subtract row: invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
@@ -211,7 +207,6 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
     }
 }
 
-/* This surely can be parallelized */
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n])
 {
     int row, col;

@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* Helper function declarations */
 double **allocate_and_read_matrix(const char *filepath, int *nrow, int *ncol);
 void process_parallel_inversion(int nrow, int ncol, double **mat, double mat_inv[nrow][ncol]);
 bool invert_matrix_from_file(const char *filepath);
@@ -62,13 +61,13 @@ bool invert_matrix_from_file(const char *filepath)
         return false;
     }
 
-    double mat_inv_parallel[nrow][ncol];
+    double mat_inv_serial[nrow][ncol];
     bool result = false;
 
-    process_serial_inversion(nrow, ncol, mat, mat_inv_parallel);
+    process_serial_inversion(nrow, ncol, mat, mat_inv_serial);
 
     // printf("\n********** Inverted Matrix Start **********\n");
-    // print_mat(nrow, ncol, mat_inv_parallel);
+    // print_mat(nrow, ncol, mat_inv_serial);
     // printf("\n********** Inverted Matrix End **********\n");
 
     free_matrix(mat, nrow);

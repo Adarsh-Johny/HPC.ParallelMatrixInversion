@@ -1,6 +1,3 @@
-
-// mpi_matrix_inverse.c
-
 #include "matrix_inverse_mpi.h"
 #include <mpi.h>
 #include <stdio.h>
