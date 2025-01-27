@@ -17,7 +17,7 @@ bool invert_matrix_from_file(const char *filepath);
 /* Main function to perform matrix inversion */
 int main(int argc, char *argv[])
 {
-    MPI_Init(&argc, &argv);
+    MPI_Init(&argc, &argv); // Initializes the MPI environment and sets up communication between processes.
 
     if (argc < 2)
     {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     }
     free(mat);
 
-    MPI_Finalize();
+    MPI_Finalize(); // Clean up all resources allocated
 
     return 0;
 }
