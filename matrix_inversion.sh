@@ -1,5 +1,6 @@
 #!/bin/bash
-#PBS -l select=2:ncpus=10:mem=2gb
+# Configuration for OpenMP
+#PBS -l select=1:ncpus=8:mem=2gb
 #PBS -l walltime=0:01:00
 #PBS -q short_cpuQ
 

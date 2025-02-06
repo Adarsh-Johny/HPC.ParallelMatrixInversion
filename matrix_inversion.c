@@ -42,7 +42,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     print_mat(n, 2 * n, mat_aug);
     */
 
-    /* Extract inverse if it the steps before were successfull */
+    /* Extract inverse */
     extract_inverse(n, 2 * n, mat_aug, mat_inv);
 
     /*

@@ -26,12 +26,14 @@ int main(int argc, char* argv[]) {
        */
 
 
-    FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
+    // FILE *fp = fopen("HPC.ParallelMatrixInversion/test_matrices/mat_3x3_i_1.txt", "r");
     /* Check that the file exists */
+    /*
     if (!fp) {
 	perror("fopen");
 	return 1;
-    }	
+    }
+    */    
 
     const char *directory_path = "HPC.ParallelMatrixInversion/test_matrices/";
     DIR *dir = opendir(directory_path);
@@ -56,8 +58,13 @@ int main(int argc, char* argv[]) {
 }
 
 
-/* A method to run test matrices on invert_matrix */
+/* A method to test invert_matrix with specific set of test matrices 
+ * The test matrices are either invertible or singular, which is determined by their
+ * filename: the format is mat_nxn_c, where n is the dimension and c is either i (invertible)
+ *  or s (singular)
+*/
 bool invert_mat_from_file(const char* dir, const char* fname) {
+
     /* Create the target file path  */
     char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
 
@@ -104,6 +111,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	}
     }
 
+    /* Close the file after successfully reading the matrix */
     fclose(fp);
     free(full_path);
 
@@ -111,25 +119,26 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     double mat_cp[nrow][ncol];
     copy_mat(nrow, ncol, mat, mat_cp);
 
-    /* Invert the matrix */
+    /* Invert the copy of original matrix */
     double mat_inv[nrow][ncol];
     bool res = invert_matrix(nrow, ncol, mat_cp, mat_inv);
 
     if (res && kind == 'i') {
 	if (check_inverse(nrow, ncol, mat, mat_inv)) {
-	    printf("Found correct inverse\n");
+	    printf("Found correct inverse for %s\n", fname);
 	} else {
-	    printf("ERROR: Didn't find inverse for invertible matrix\n");
+	    printf("ERROR: Didn't find inverse for invertible matrix at %s\n", fname);
 	}
     } else if (!res && kind == 'i') {
-	printf("ERROR: Failed to invert invertible matrix\n");
+	printf("ERROR: Failed to invert invertible matrix at %s\n", fname);
     }
 
     printf("\n\n");
     return true;
 }
 
-
+/* Function to test that the found inverse is the actual inverse. Used as a test for generated
+ * matrices */
 bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]) {
     bool success = true;
     double mat_res[nrow][ncol];
