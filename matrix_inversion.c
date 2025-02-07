@@ -74,6 +74,7 @@ bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
     for (i = nrow - 1; i > 0; i--) {
 	/* printf("GE: Eliminating the rows above %d\n", i); */
 	int r;
+        #pragma omp parallel for
 	for (r = i-1; r >= 0; r--) {
 	    /* printf("GE: Eliminating row %d\n", r); */
 	    double coeff = mat[r][i];
@@ -137,6 +138,7 @@ void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol,
     }
 
     int i;
+    #pragma omp parallel for
     for (i = 0; i < ncol; i++) {
 	mat[target_idx][i] -= mat[row_idx][i] * coeff;
     }
@@ -150,6 +152,7 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
     }
 
     int j;
+    #pragma omp parallel for
     for (j = 0; j < ncol; j++) {
 	mat[row_idx][j] *= s;
     }
