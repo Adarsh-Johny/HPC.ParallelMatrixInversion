@@ -17,9 +17,9 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     /* Forward elimination */
     bool res = gaussian_elimination(n, 2 * n, mat_aug);
     if (res) {
-	printf("GE successsful\n");
+	//printf("GE successsful\n");
     } else {
-	printf("GE failed\n");
+	//printf("GE failed\n");
 	return false;
     }
 
@@ -31,9 +31,9 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     /* Backward elimination */
     bool res2 = rref(n, 2 * n, mat_aug);
     if (res2) {
-	printf("RREF successful\n");
+	//printf("RREF successful\n");
     } else {
-	printf("RREF failed\n");
+	printf("ERROR: RREF failed\n");
 	return false;
     }
 

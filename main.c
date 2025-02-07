@@ -77,7 +77,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     strcat(full_path, fname);
 
     /* Extract dimensions and type of matrix (invertible or singular) from the filename */
-    printf("Reading matrix from file %s\n", fname);
+    printf("Reading matrix from file %s ", fname);
     int nrow, ncol;
     char kind;
 
@@ -86,7 +86,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	return false;
     }
 
-    printf("Reading %dx%d matrix from %s ", nrow, ncol, full_path);
+    // printf("Reading %dx%d matrix from %s ", nrow, ncol, full_path);
     printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 
     /* Open the file */
