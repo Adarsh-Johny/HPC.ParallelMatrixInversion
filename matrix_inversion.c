@@ -160,8 +160,9 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]) {
     int row, col;
 
-    /* Parallelize the copying of the rows */
+    #pragma omp parallel for
     for (row = 0; row < n; row++) {
+        #pragma omp parallel for
 	for (col = 0; col < n; col++) {
 	    /* Copy the row of original matrix */
 	    mat_aug[row][col] = mat[row][col];
