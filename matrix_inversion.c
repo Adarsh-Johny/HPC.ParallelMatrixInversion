@@ -57,6 +57,7 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
 void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]) {
     int i, j;
 
+    #pragma omp parallel for
     for (i = 0; i < nrow; i++) {
 	for (j = 0; j < ncol; j++) {
 	    /* Copy only the right side of the augmented matrix */
@@ -159,7 +160,6 @@ void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][nc
 }
 
 
-/* This surely can be parallelized */
 void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]) {
     int row, col;
 
