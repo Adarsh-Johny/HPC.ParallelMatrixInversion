@@ -59,7 +59,7 @@ void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_
 
     #pragma omp parallel for
     for (i = 0; i < nrow; i++) {
-	for (j = 0; j < ncol; j++) {
+	for (j = 0; j < nrow; j++) {
 	    /* Copy only the right side of the augmented matrix */
 	    mat_inv[i][j] = mat_aug[i][nrow + j];
 	}
