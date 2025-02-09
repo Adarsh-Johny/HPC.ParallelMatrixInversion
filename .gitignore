@@ -53,6 +53,8 @@ dkms.conf
 
 # Generated output files
 *.sh.*
+*.o*
+*.e*
 
 # Custom
 matrix_inversion
