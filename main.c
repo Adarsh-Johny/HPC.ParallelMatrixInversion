@@ -14,9 +14,26 @@ bool invert_mat_from_file(const char* dir, const char* fname);
 bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][ncol]);
 int run_test_matrices();
 void save_results(const char* fname, int size, int threads, int run, double time);
-bool run_benchmark(const char* dir, const char* fname, int repeats, int num_threads);
+bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int num_threads);
+void run_benchmark(const char* save_location);
 
 int main(int argc, char* argv[]) {
+    int repeats = 5;
+    int i;
+    for (i = 0; i < repeats; i++) {
+	printf("----------------------");
+	printf("Repeat %d", i);
+	printf("----------------------\n");
+        run_test_matrices();
+	printf("----------------------");
+	printf("-------");
+	printf("----------------------\n\n");
+    }
+
+    return 0;
+}
+
+void run_benchmark(const char* save_location) {
     //int fails = run_test_matrices;
 
     //if (fails > 0) {
@@ -36,29 +53,42 @@ int main(int argc, char* argv[]) {
     DIR *dir = opendir(directory_path);
     if (!dir) {
             perror("opendir");
-            return 1;
+	    return;
     }
 
     printf("Opened dir %s\n", directory_path);
 
-    int repeats = 2;
+    // Create the file to save the results (we want to create new result file every time)
+    FILE *results_file = fopen(save_location, "w");
+    if (!results_file) {
+	    perror("Error creating results file");
+	        return;
+    }
+    fclose(results_file);
 
+    /* Iterate the matrix data in data folder and time inversion of each matrix as many
+     * times as indicated by repeats */
+    int repeats = 2;
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         /* Skip directories (there shouldn't be any) */
         if (entry->d_type == DT_REG) {
             printf("Running benchmark for file %s", entry->d_name);
-            run_benchmark(directory_path, entry->d_name, repeats, num_threads);
+            run_benchmark_for_file(directory_path, entry->d_name, repeats, num_threads);
         }
         // TODO: Break after reading the first file
         break;
     }
     closedir(dir);
-
-    return 0;
 }
 
-bool run_benchmark(const char* dir, const char* fname, int repeats, int num_threads) {
+/* Run benchmark for a given file.
+ * The matrix is read from the file, then it's inverted with timing.
+ * Inversion is repeated as many times as given in the argument repeats.
+ * Each result is saved into same file for each matrix, containing the
+ * time, matrix size, number of threads and index.
+ */
+bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int num_threads) {
 
     // Read the matrix from file. TODO: Use malloc instead of VLAs
     char* full_path = malloc(strlen(dir) + strlen(fname) + 1);
@@ -168,7 +198,7 @@ int run_test_matrices() {
         return 1;
     }
 
-    printf("Opened dir %s\n", directory_path);
+    // printf("Opened dir %s\n", directory_path);
 
     int failed_tests = 0;
 
@@ -291,6 +321,11 @@ bool check_inverse(int nrow, int ncol, double m1[nrow][ncol], double m2[nrow][nc
             }
         }
     }
+
+//    if (!success) {
+//        printf("A*A^-1:\n");
+//        print_mat(nrow, nrow, mat_res);
+//    }
 
     return success;
 }
