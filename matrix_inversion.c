@@ -7,20 +7,24 @@
 #include <stdbool.h>
 #include <math.h> /* fabs */
 
-bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nrow][ncol]) {
+double** invert_matrix(int nrow, int ncol, double** mat, bool *success) {
     int n = nrow;
+    *success = false;
 
     /* Augment identity */
-    double mat_aug[n][2 * ncol];
+    double** mat_aug = allocate_mat(nrow, 2 * ncol);
+    if (!mat_aug) {
+	printf("Error in invert_matrix: memory allocation failed\n");
+	return NULL;
+    }
+
     augment_mat(n, mat, mat_aug);
 
     /* Forward elimination */
-    bool res = gaussian_elimination(n, 2 * n, mat_aug);
-    if (res) {
-	//printf("GE successsful\n");
-    } else {
+    if (!gaussian_elimination(n, 2 * n, mat_aug)) {
 	//printf("GE failed\n");
-	return false;
+	free_mat(mat_aug, n);
+	return NULL;
     }
 
     /*
@@ -29,12 +33,10 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     */
 
     /* Backward elimination */
-    bool res2 = rref(n, 2 * n, mat_aug);
-    if (res2) {
-	//printf("RREF successful\n");
-    } else {
+    if (!rref(n, 2 * n, mat_aug)) {
 	printf("ERROR: RREF failed\n");
-	return false;
+	free_mat(mat_aug, n);
+	return NULL;
     }
 
     /*
@@ -43,43 +45,52 @@ bool invert_matrix(int nrow, int ncol, double mat[nrow][ncol], double mat_inv[nr
     */
 
     /* Extract inverse */
-    extract_inverse(n, 2 * n, mat_aug, mat_inv);
+    double** mat_inv = extract_inverse(n, 2 * n, mat_aug);
 
     /*
     printf("The extracted inverse matrix\n");
     print_mat(n, n, mat_inv);
     */
 
-    return true;
+    free_mat(mat_aug, n);
+    *success = true;
+    return mat_inv;
 }
 
 /* Extract the augmented part of the augmented matrix */
-void extract_inverse(int nrow, int ncol, double mat_aug[nrow][ncol], double mat_inv[nrow][nrow]) {
+double** extract_inverse(int nrow, int ncol, double** mat_aug) {
+    double** mat_inv = allocate_mat(nrow, nrow);
+    if (!mat_inv) {
+	printf("Error in extract_inverse: memory allocation failed\n");
+	return NULL;
+    }
+
     int i, j;
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (i = 0; i < nrow; i++) {
 	for (j = 0; j < nrow; j++) {
 	    /* Copy only the right side of the augmented matrix */
 	    mat_inv[i][j] = mat_aug[i][nrow + j];
 	}
     }
+    return mat_inv;
 }
 
 /* Second part of the Gauss-Jordan elimination, results in the reduced row echelon form */
-bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
+bool rref(int nrow, int ncol, double** mat) {
     int i; 
-    /* printf("rref input: nrow = %d, ncol = %d, matrix = \n", nrow, ncol); */
-    /* print_mat(nrow, ncol, mat); */
 
+    /* Eliminate the values above the pivots starting from the last row */
     for (i = nrow - 1; i > 0; i--) {
-	/* printf("GE: Eliminating the rows above %d\n", i); */
-	int r;
+	int row;
         //#pragma omp parallel for // No because of the coeff somehow gets messed up
-	for (r = i-1; r >= 0; r--) {
-	    /* printf("GE: Eliminating row %d\n", r); */
-	    double coeff = mat[r][i];
-	    subtract_row(i, r, coeff, nrow, ncol, mat);
+	for (row = i - 1; row >= 0; row--) {
+	    double coeff = mat[row][i];
+	    int col;
+	    for (col = 0; col < ncol; col++) {
+		mat[row][col] -= mat[i][col] * coeff;
+	    }
 	}
     }
     return true;
@@ -87,8 +98,8 @@ bool rref(int nrow, int ncol, double mat[nrow][ncol]) {
 
 
 /* Normalize pivots and clear nonzero values below diagonal */
-bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
-    int i, r;
+bool gaussian_elimination(int nrow, int ncol, double** mat) {
+    int i;
 
     /* Iterate the rows of mat */
     for (i = 0; i < nrow; i++) {
@@ -97,9 +108,10 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 
 	    /* Find row below the current row where the current column index is nonzero */
 	    bool found = false;
-	    for (r = i+1; r < nrow; r++) {
-		if (fabs(mat[r][i]) > 1e-9) {
-		    swap_rows(i, r, nrow, ncol, mat);
+	    int row;
+	    for (row = i + 1; row < nrow; row++) {
+		if (fabs(mat[row][i]) > 1e-9) {
+		    swap_rows(i, row, nrow, ncol, mat);
 		    found = true;
 		    break;
 		}
@@ -111,59 +123,31 @@ bool gaussian_elimination(int nrow, int ncol, double mat[nrow][ncol]) {
 
 	}
 
-	/* Normalize the row */
-	double s = 1/mat[i][i];
-	multiply_row(i, s, nrow, ncol, mat);
+	/* Normalize the pivot to 1 by scaling the row */
+	double s = 1 / mat[i][i];
+	int col;
+	for (col = 0; col < ncol; col++) {
+	    mat[i][col] *= s;
+	}
 
-	/* Eliminate nonzero values below */
-	int r;
-	for (r = i+1; r < nrow; r++) {
-	    double coeff = mat[r][i];
-	    subtract_row(i, r, coeff, nrow, ncol, mat);
+	/* Eliminate nonzero values below the current pivot */
+	int row;
+	for (row = i + 1; row < nrow; row++) {
+	    double coeff = mat[row][i];
+	    int col;
+	    for (col = 0; col < ncol; col++) {
+		mat[row][col] -= coeff * mat[i][col];
+	    }
 	}
     }
 
     return true;
 }
 
-/* Subtract the values of row row_idx multiplied with coefficient coeff from the row given by target_idx */
-void subtract_row(int row_idx, int target_idx, double coeff, int nrow, int ncol, double mat[nrow][ncol]) {
-    /* TODO: debug printing */
-
-    if (row_idx < 0 || row_idx >= nrow) {
-	printf("Subtract row: invalid row index %d for matrix %d x %d\n", row_idx, nrow, ncol);
-    }
-
-    if (target_idx < 0 || target_idx >= nrow) {
-	printf("Subtract row: invalid target row index %d for matrix %d x %d\n", target_idx, nrow, ncol);
-    }
-
-    int i;
-    //#pragma omp parallel for
-    for (i = 0; i < ncol; i++) {
-	mat[target_idx][i] -= mat[row_idx][i] * coeff;
-    }
-}
-
-void multiply_row(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]) {	
-    /* TODO: remove later, random debugging */
-    if (row_idx < 0 || row_idx >= nrow) {
-	printf("Multiply row: invalid row index %d for matrix %d x %d", row_idx, nrow, ncol);
-	return;
-    }
-
-    int j;
-    #pragma omp parallel for
-    for (j = 0; j < ncol; j++) {
-	mat[row_idx][j] *= s;
-    }
-}
-
-
-void augment_mat(int n, double mat[n][n], double mat_aug[n][2 * n]) {
+void augment_mat(int n, double** mat, double** mat_aug) {
     int row, col;
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (row = 0; row < n; row++) {
         //#pragma omp parallel for
 	for (col = 0; col < n; col++) {
