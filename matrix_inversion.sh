@@ -2,7 +2,7 @@
 # Configuration for OpenMP
 #PBS -l select=1:ncpus=8:mem=2gb
 # hh:mm:ss
-#PBS -l walltime=01:00:00
+#PBS -l walltime=03:00:00
 #PBS -q short_cpuQ
 
 # load the module
