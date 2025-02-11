@@ -20,6 +20,11 @@ double** invert_matrix(int nrow, int ncol, double** mat, bool *success) {
 
     augment_mat(n, mat, mat_aug);
 
+    /*
+    printf("Augmented matrix:\n");
+    print_mat(nrow, 2 * ncol, mat_aug);
+    */
+
     /* Forward elimination */
     if (!gaussian_elimination(n, 2 * n, mat_aug)) {
 	//printf("GE failed\n");
@@ -69,6 +74,7 @@ double** extract_inverse(int nrow, int ncol, double** mat_aug) {
 
     //#pragma omp parallel for
     for (i = 0; i < nrow; i++) {
+        #pragma omp parallel for
 	for (j = 0; j < nrow; j++) {
 	    /* Copy only the right side of the augmented matrix */
 	    mat_inv[i][j] = mat_aug[i][nrow + j];
@@ -84,7 +90,7 @@ bool rref(int nrow, int ncol, double** mat) {
     /* Eliminate the values above the pivots starting from the last row */
     for (i = nrow - 1; i > 0; i--) {
 	int row;
-        //#pragma omp parallel for // No because of the coeff somehow gets messed up
+        #pragma omp parallel for
 	for (row = i - 1; row >= 0; row--) {
 	    double coeff = mat[row][i];
 	    int col;
@@ -126,12 +132,14 @@ bool gaussian_elimination(int nrow, int ncol, double** mat) {
 	/* Normalize the pivot to 1 by scaling the row */
 	double s = 1 / mat[i][i];
 	int col;
+        #pragma omp parallel for
 	for (col = 0; col < ncol; col++) {
 	    mat[i][col] *= s;
 	}
 
 	/* Eliminate nonzero values below the current pivot */
 	int row;
+	#pragma omp parallel for
 	for (row = i + 1; row < nrow; row++) {
 	    double coeff = mat[row][i];
 	    int col;
@@ -149,7 +157,7 @@ void augment_mat(int n, double** mat, double** mat_aug) {
 
     //#pragma omp parallel for
     for (row = 0; row < n; row++) {
-        //#pragma omp parallel for
+        #pragma omp parallel for
 	for (col = 0; col < n; col++) {
 	    /* Copy the row of original matrix */
 	    mat_aug[row][col] = mat[row][col];
