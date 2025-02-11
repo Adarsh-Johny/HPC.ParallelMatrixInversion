@@ -16,31 +16,38 @@ bool check_inverse(int nrow, int ncol, double** m1, double** m2);
 int run_test_matrices();
 void save_results(const char* fname, int size, int threads, int run, double time);
 bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int num_threads, const char* save_location);
-void run_benchmark(const char* save_location, int repeats);
+void run_benchmark(const char* save_location, bool create_new_file, int repeats);
 
 int main(int argc, char* argv[]) {
 
-    run_benchmark("./HPC.ParallelMatrixInversion/results_serial.csv", 5);
+    #ifdef _OPENMP
+	printf("num threads: %d\n", omp_get_max_threads());
+    #endif
+
+    run_benchmark("./HPC.ParallelMatrixInversion/results_parallel.csv", false, 10);
 
     /*
     int repeats = 5;
+    int tot_failed_tests = 0;
     int i;
     for (i = 0; i < repeats; i++) {
 	printf("----------------------");
 	printf("Repeat %d", i);
 	printf("----------------------\n");
-        //int failed = run_test_matrices();
-	//printf("Failed tests: %d\n", failed);
-	//run_benchmark("./HPC.ParallelMatrixInversion/results_8192.csv");
+        int failed = run_test_matrices();
+	printf("Failed tests: %d\n", failed);
+	tot_failed_tests += failed;
 	printf("----------------------");
 	printf("-------");
 	printf("----------------------\n\n");
     }
+    printf("------- Total failed: %d --------\n", tot_failed_tests);
     */
+
     return 0;
 }
 
-void run_benchmark(const char* save_location, int repeats) {
+void run_benchmark(const char* save_location, bool create_new_file, int repeats) {
     //printf("DEBUG: run_benchmark\n");
     //int fails = run_test_matrices;
 
@@ -68,25 +75,26 @@ void run_benchmark(const char* save_location, int repeats) {
 
     printf("Opened dir %s\n", directory_path);
 
-    // Create the file to save the results (we want to create new result file every time)
-    FILE *results_file = fopen(save_location, "w");
-    if (!results_file) {
+    // Create the save file for benchmarking results, otherwise append to existing file
+    if (create_new_file) {
+	FILE *results_file = fopen(save_location, "w");
+	if (!results_file) {
 	    perror("Error creating results file");
-	        return;
+	    return;
+	}
+        fclose(results_file);
+	printf("Created a new result file: %s\n", save_location);
     }
-    fclose(results_file);
 
-    //printf("DEBUG: Created the file for results\n");
+    // TODO: Filter only specific files
+    //const char *target = "8192";
     /* Iterate the matrix data in data folder and time inversion of each matrix as many
      * times as indicated by repeats */
-    //int repeats = 2;
     struct dirent *entry;
-    //printf("DEBUG: reading from dir %s\n", directory_path);
     while ((entry = readdir(dir)) != NULL) {
-	//printf("DEBUG: Found file %s\n", entry->d_name);
         /* Skip directories (there shouldn't be any) */
-	//printf("DEBUG: entry type is %d, expected %d\n", entry->d_type, DT_REG);
         if (entry->d_type == DT_REG) {
+        //if ((entry->d_type == DT_REG) & (strstr(entry->d_name, target) != NULL)) {
             printf("Running benchmark for file %s", entry->d_name);
             run_benchmark_for_file(directory_path, entry->d_name, repeats, num_threads, save_location);
 	}
@@ -182,10 +190,13 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
         //save_results("./HPC.ParallelMatrixInversion/results.csv", n, num_threads, r + 1, elapsed);        
         save_results(save_location, n, num_threads, r + 1, elapsed);
 
+	/*
         // Check the inverse for fun
         if (!check_inverse(n, n, mat, mat_inv)) {
             printf("Failed to find inverse for %s\n", fname);
         }
+	*/
+
 	free_mat(mat_inv, n);
     }
 
@@ -316,16 +327,20 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     //double** mat_inv = allocate_mat(nrow, ncol);
     bool res = false;
     double** mat_inv = invert_matrix(nrow, ncol, mat_cp, &res);
+    bool succ = false;
 
     if (res && kind == 'i') {
         if (check_inverse(nrow, ncol, mat, mat_inv)) {
             printf("Found correct inverse for %s\n", fname);
+	    succ = true;
         } else {
             printf("ERROR: Didn't find inverse for invertible matrix at %s\n", fname);
         }
 	free_mat(mat_inv, nrow); // Free the inverse only if it was found
     } else if (!res && kind == 'i') {
         printf("ERROR: Failed to invert invertible matrix at %s\n", fname);
+    } else if (!res && kind == 's') {
+	succ = true;
     }
     
     //printf("DEBUG: Freeing the matrices ");
@@ -333,7 +348,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     free_mat(mat_cp, nrow);
     //free_mat(mat_inv, nrow);
     printf("\n\n");
-    return true;
+    return succ;
 }
 
 /* Function to test that the found inverse is the actual inverse. Used as a test for generated
