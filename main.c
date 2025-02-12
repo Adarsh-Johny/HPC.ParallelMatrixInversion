@@ -24,7 +24,8 @@ int main(int argc, char* argv[]) {
 	printf("num threads: %d\n", omp_get_max_threads());
     #endif
 
-    run_benchmark("./HPC.ParallelMatrixInversion/results_parallel.csv", false, 10);
+    //run_benchmark("./HPC.ParallelMatrixInversion/results_parallel.csv", false, 10);
+    run_benchmark("./HPC.ParallelMatrixInversion/results_serial.csv", false, 5);
 
     /*
     int repeats = 5;
@@ -47,13 +48,12 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+/* Iterate through the data folder and run inversion for each matrix in the folder,
+ * argument repeats gives the number the matrix inversion performance is recorded.
+ * The result file in given save_location is expected to exist if create_new_file is
+ * false, otherwise it's created.
+ */
 void run_benchmark(const char* save_location, bool create_new_file, int repeats) {
-    //printf("DEBUG: run_benchmark\n");
-    //int fails = run_test_matrices;
-
-    //if (fails > 0) {
-    //    printf("%d tests failed");
-    //}
     
     int num_threads;
     #ifdef _OPENMP
@@ -86,26 +86,32 @@ void run_benchmark(const char* save_location, bool create_new_file, int repeats)
 	printf("Created a new result file: %s\n", save_location);
     }
 
-    // TODO: Filter only specific files
-    //const char *target = "8192";
+    // TODO: currently skipping the largest 8192x8192 matrix for serial implementation
+    const char *target = "8192";
     /* Iterate the matrix data in data folder and time inversion of each matrix as many
      * times as indicated by repeats */
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        /* Skip directories (there shouldn't be any) */
+	/*
+        // Skip directories (there shouldn't be any)
         if (entry->d_type == DT_REG) {
-        //if ((entry->d_type == DT_REG) & (strstr(entry->d_name, target) != NULL)) {
-            printf("Running benchmark for file %s", entry->d_name);
-            run_benchmark_for_file(directory_path, entry->d_name, repeats, num_threads, save_location);
+	    printf("Running benchmark for file %s", entry->d_name);
+	    run_benchmark_for_file(directory_path, entry->d_name, repeats, num_threads, save_location);
+	}
+	*/
+	// Skip the current file if it contains string 8192
+	if ((entry->d_type == DT_REG) & (strstr(entry->d_name, target) == NULL)) {
+	    printf("Running benchmark for file %s", entry->d_name);
+	    run_benchmark_for_file(directory_path, entry->d_name, repeats, num_threads, save_location);
 	}
     }
     closedir(dir);
 }
 
 /* Run benchmark for a given file.
- * The matrix is read from the file, then it's inverted with timing.
+ * The matrix is read from the file, then it's inverted with timing the inversion.
  * Inversion is repeated as many times as given in the argument repeats.
- * Each result is saved into same file for each matrix, containing the
+ * Each result is appended into the given file, containing the
  * time, matrix size, number of threads and index.
  */
 bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int num_threads, const char* save_location) {
@@ -136,7 +142,6 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
     }
 
     int i, j;
-    //double mat[n][n];
     double** mat = allocate_mat(n, n);
     if (!mat) {
 	printf("Error in run_benchmark_for_file: memory allocation (mat) failed");
@@ -159,7 +164,6 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
     fclose(fp);
     free(full_path);
     
-    //double mat_cp[n][n];
     double** mat_cp = allocate_mat(n, n);
     if (!mat_cp) {
 	printf("Error in run_benchmark_for_file: matrix allocation (mat_cp)  failed\n");
@@ -169,11 +173,9 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
 
     copy_mat(n, n, mat, mat_cp);
 
-    //printf("DEBUG: run_benchmark_for_file, start benchmarking\n");
     // Benchmarking
     int r;
     for (r = 0; r < repeats; r++) {
-	//printf("DEBUG: benchmark round %d\n", r);
 	bool success = false;
 
         // Start time
@@ -187,11 +189,10 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
         
         double elapsed = end_time - start_time;
 	printf("rep %d for mat %d: start %f, end %f\n", r, n, start_time, end_time);
-        //save_results("./HPC.ParallelMatrixInversion/results.csv", n, num_threads, r + 1, elapsed);        
         save_results(save_location, n, num_threads, r + 1, elapsed);
 
 	/*
-        // Check the inverse for fun
+        // Check the inverse for fun (slow)
         if (!check_inverse(n, n, mat, mat_inv)) {
             printf("Failed to find inverse for %s\n", fname);
         }
@@ -205,6 +206,8 @@ bool run_benchmark_for_file(const char* dir, const char* fname, int repeats, int
     return true;
 }
 
+/* Save the inversion performance results
+ */
 void save_results(const char* fname, int size, int threads, int run, double time) {
     FILE* file = fopen(fname, "a");
     if (!file) {
@@ -213,10 +216,12 @@ void save_results(const char* fname, int size, int threads, int run, double time
     }
     fprintf(file, "%d,%d,%d,%f\n", size, threads, run, time);
     fclose(file);
-    //printf("DEBUG: %d, %d, %d, %f saved to file %s\n", size, threads, run, time, fname);
 }
 
-
+/*
+ * Method to run the test matrices, same as for benchmarking but without the timing.
+ * Returns the number of failed tests
+ */ 
 int run_test_matrices() {
     print_working_dir();
 
@@ -273,7 +278,6 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
         return false;
     }
 
-    // printf("Reading %dx%d matrix from %s ", nrow, ncol, full_path);
     printf("(%s)\n", (kind == 'i') ? "invertible" : "singular");
 
     /* Open the file */
@@ -310,10 +314,7 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     fclose(fp);
     free(full_path);
 
-    //printf("DEBUG: Matrix read from file successfully");
-
     /* Create a copy of the input matrix before inverting it */
-    //double mat_cp[nrow][ncol];
     double** mat_cp = allocate_mat(nrow, ncol);
     if (!mat_cp) {
 	printf("Error in invert_mat_from_file: memory allocation (mat_cp) failed\n");
@@ -323,8 +324,6 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
     copy_mat(nrow, ncol, mat, mat_cp);
 
     /* Invert the copy of original matrix */
-    //double mat_inv[nrow][ncol];
-    //double** mat_inv = allocate_mat(nrow, ncol);
     bool res = false;
     double** mat_inv = invert_matrix(nrow, ncol, mat_cp, &res);
     bool succ = false;
@@ -343,10 +342,8 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
 	succ = true;
     }
     
-    //printf("DEBUG: Freeing the matrices ");
     free_mat(mat, nrow);
     free_mat(mat_cp, nrow);
-    //free_mat(mat_inv, nrow);
     printf("\n\n");
     return succ;
 }
@@ -355,7 +352,6 @@ bool invert_mat_from_file(const char* dir, const char* fname) {
  * matrices */
 bool check_inverse(int nrow, int ncol, double** m1, double** m2) {
     bool success = true;
-    //double mat_res[nrow][ncol];
     double** mat_res = allocate_mat(nrow, ncol);
     if (!mat_res) {
 	printf("Error in check_inverse: memory allocation (mat_res) failed\n");
@@ -383,10 +379,6 @@ bool check_inverse(int nrow, int ncol, double** m1, double** m2) {
         }
     }
 
-//    if (!success) {
-//        printf("A*A^-1:\n");
-//        print_mat(nrow, nrow, mat_res);
-//    }
     free_mat(mat_res, nrow);
     return success;
 }
