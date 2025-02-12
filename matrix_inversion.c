@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <math.h> /* fabs */
 
+/* Invert the passed nrow x ncol matrix mat.
+ */ 
 double** invert_matrix(int nrow, int ncol, double** mat, bool *success) {
     int n = nrow;
     *success = false;
@@ -20,22 +22,11 @@ double** invert_matrix(int nrow, int ncol, double** mat, bool *success) {
 
     augment_mat(n, mat, mat_aug);
 
-    /*
-    printf("Augmented matrix:\n");
-    print_mat(nrow, 2 * ncol, mat_aug);
-    */
-
     /* Forward elimination */
     if (!gaussian_elimination(n, 2 * n, mat_aug)) {
-	//printf("GE failed\n");
 	free_mat(mat_aug, n);
 	return NULL;
     }
-
-    /*
-    printf("Matrix after gaussian elimination (should have non-zero diagonal)\n");
-    print_mat(n, 2 * n, mat_aug);
-    */
 
     /* Backward elimination */
     if (!rref(n, 2 * n, mat_aug)) {
@@ -44,18 +35,8 @@ double** invert_matrix(int nrow, int ncol, double** mat, bool *success) {
 	return NULL;
     }
 
-    /*
-    printf("Matrix after RREF\n");
-    print_mat(n, 2 * n, mat_aug);
-    */
-
     /* Extract inverse */
     double** mat_inv = extract_inverse(n, 2 * n, mat_aug);
-
-    /*
-    printf("The extracted inverse matrix\n");
-    print_mat(n, n, mat_inv);
-    */
 
     free_mat(mat_aug, n);
     *success = true;
@@ -72,7 +53,6 @@ double** extract_inverse(int nrow, int ncol, double** mat_aug) {
 
     int i, j;
 
-    //#pragma omp parallel for
     for (i = 0; i < nrow; i++) {
         #pragma omp parallel for
 	for (j = 0; j < nrow; j++) {
@@ -155,7 +135,6 @@ bool gaussian_elimination(int nrow, int ncol, double** mat) {
 void augment_mat(int n, double** mat, double** mat_aug) {
     int row, col;
 
-    //#pragma omp parallel for
     for (row = 0; row < n; row++) {
         #pragma omp parallel for
 	for (col = 0; col < n; col++) {
