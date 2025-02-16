@@ -11,4 +11,3 @@ void subtract_row_par(int row_idx, int target_idx, double coeff, int nrow, int n
 void multiply_row_par(int row_idx, double s, int nrow, int ncol, double mat[nrow][ncol]);
 
 #endif
-
